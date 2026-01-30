@@ -12,6 +12,10 @@ export const theme = {
             slate400: "#94a3b8",
         }
     },
+    screens: {
+        xs: "375px",
+        sm: "640px",
+    },
     fonts: {
         display: "'Lexend', sans-serif"
     },

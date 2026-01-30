@@ -4,6 +4,11 @@ import { theme } from '../../../styles/theme';
 export const ListSection = styled.section`
     padding-left: 1.5rem; /* pl-6 */
     padding-bottom: 1.5rem; /* pb-6 */
+
+    @media (max-width: ${theme.screens.xs}) {
+        padding-left: 1rem;
+        padding-bottom: 1rem;
+    }
 `;
 
 export const SectionHeader = styled.div`

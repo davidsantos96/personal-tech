@@ -3,6 +3,10 @@ import { theme } from '../../../styles/theme';
 
 export const AlertsSection = styled.section`
     padding: 0 1.5rem 1.5rem 1.5rem; /* px-6 pb-6 */
+
+    @media (max-width: ${theme.screens.xs}) {
+        padding: 0 1rem 1rem 1rem;
+    }
 `;
 
 export const Title = styled.h3`

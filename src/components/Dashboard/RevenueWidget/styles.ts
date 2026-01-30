@@ -3,6 +3,10 @@ import { theme } from '../../../styles/theme';
 
 export const WidgetSection = styled.section`
     padding: 0 1.5rem 1.5rem 1.5rem; /* px-6 pb-6 */
+
+    @media (max-width: ${theme.screens.xs}) {
+        padding: 0 1rem 1rem 1rem;
+    }
 `;
 
 export const WidgetCard = styled.div`
@@ -17,6 +21,10 @@ export const WidgetHeader = styled.div`
     align-items: center;
     justify-content: space-between;
     margin-bottom: 2.25rem; /* mb-9 (approx) */
+
+    @media (max-width: ${theme.screens.xs}) {
+        margin-bottom: 1.5rem;
+    }
 `;
 
 export const WidgetLabel = styled.p`

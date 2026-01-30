@@ -10,6 +10,10 @@ export const NavContainer = styled.nav`
     backdrop-filter: blur(12px);
     border-top: 1px solid rgba(255, 255, 255, 0.05);
     padding: 1rem 1.5rem 2rem 1.5rem; /* pt-4 px-6 pb-8 */
+
+    @media (max-width: ${theme.screens.xs}) {
+        padding: 1rem 1rem 1.5rem 1rem;
+    }
     display: flex;
     justify-content: space-between;
     align-items: center;

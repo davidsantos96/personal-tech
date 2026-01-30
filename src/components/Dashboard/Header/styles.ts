@@ -7,6 +7,11 @@ export const HeaderContainer = styled.header`
     justify-content: space-between;
     padding: 1.5rem 1.5rem 0.5rem 1.5rem; /* p-6 pb-2 pt-12 (approx) */
     padding-top: 3rem;
+
+    @media (max-width: ${theme.screens.xs}) {
+        padding: 1rem 1rem 0.5rem 1rem;
+        padding-top: 2rem;
+    }
 `;
 
 export const ProfileSection = styled.div`

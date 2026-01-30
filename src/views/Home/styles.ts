@@ -14,6 +14,10 @@ export const HomeContainer = styled.div`
     overflow: hidden;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     padding-bottom: 6rem; /* Space for bottom nav */
+
+    @media (max-width: ${theme.screens.xs}) {
+        padding-bottom: 5.5rem;
+    }
 `;
 
 export const ScrollArea = styled.div`

@@ -6,6 +6,11 @@ export const StatsSection = styled.section`
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
+
+    @media (max-width: ${theme.screens.xs}) {
+        padding: 1rem;
+        gap: 0.75rem;
+    }
 `;
 
 export const Card = styled.div`
@@ -15,6 +20,10 @@ export const Card = styled.div`
     border: 1px solid rgba(255, 255, 255, 0.05);
     transition: all 0.2s;
     cursor: pointer;
+
+    @media (max-width: ${theme.screens.xs}) {
+        padding: 1rem;
+    }
 
     &:hover {
         border-color: rgba(255, 109, 0, 0.3); /* primary/30 */
