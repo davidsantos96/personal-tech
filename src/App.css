@@ -1,0 +1,5 @@
+/* Resetting default app styles to allow full screen layout */
+.App {
+  width: 100%;
+  min-height: 100vh;
+}
