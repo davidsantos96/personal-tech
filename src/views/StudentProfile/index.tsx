@@ -143,7 +143,7 @@ export const StudentProfile = () => {
                 <ViewAllLink>Ver todos</ViewAllLink>
             </SectionTitle>
             <HistoryList>
-                <HistoryItem>
+                <HistoryItem onClick={() => navigate('/treino-sessao', { state: { workoutId: 'treino-a' } })}>
                     <HistoryIconBox>
                         <DumbbellIcon />
                     </HistoryIconBox>
@@ -169,7 +169,7 @@ export const StudentProfile = () => {
                     </IconButton>
                 </HistoryItem>
 
-                <HistoryItem>
+                <HistoryItem onClick={() => navigate('/treino-sessao', { state: { workoutId: 'treino-b' } })}>
                     <HistoryIconBox>
                         <DumbbellIcon />
                     </HistoryIconBox>

@@ -8,6 +8,7 @@ import { Agenda } from './views/Agenda';
 import { StudentProfile } from './views/StudentProfile';
 import { WorkoutBuilder } from './views/WorkoutBuilder';
 import { ExerciseLibrary } from './views/ExerciseLibrary';
+import { WorkoutSession } from './views/WorkoutSession';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             <Route path="/perfil-aluno" element={<StudentProfile />} />
             <Route path="/montar-treino" element={<WorkoutBuilder />} />
             <Route path="/biblioteca-exercicios" element={<ExerciseLibrary />} />
+            <Route path="/treino-sessao" element={<WorkoutSession />} />
           </Routes>
         </div>
       </BrowserRouter>

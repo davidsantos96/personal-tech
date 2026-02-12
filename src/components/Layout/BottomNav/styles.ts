@@ -4,8 +4,11 @@ import { theme } from '../../../styles/theme';
 export const NavContainer = styled.nav`
     position: fixed;
     bottom: 0;
+    left: 0;
+    right: 0;
     width: 100%;
-    max-width: 448px; /* max-w-md matching the dashboard container constraint */
+    max-width: 28rem; /* max-w-md matching the dashboard container constraint */
+    margin: 0 auto; /* Center horizontally on all screen sizes */
     background-color: rgba(10, 10, 10, 0.9);
     backdrop-filter: blur(12px);
     border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -18,9 +21,6 @@ export const NavContainer = styled.nav`
     justify-content: space-between;
     align-items: center;
     z-index: 10;
-    /* Since the main layout isn't strictly max-w-md centered in this impl yet, we might need adjustments. 
-       Assuming the Home container handles the max-width relative or centering. 
-       Ideally this should be sticky or fixed within the mobile container. */
 `;
 
 export const NavButton = styled.button<{ $active?: boolean }>`
