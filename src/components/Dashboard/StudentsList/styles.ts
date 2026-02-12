@@ -67,6 +67,17 @@ export const StudentCard = styled.div`
     gap: 1rem;
     position: relative;
     overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+        border-color: rgba(255, 109, 0, 0.3);
+        transform: translateY(-2px);
+    }
+
+    &:active {
+        transform: scale(0.98);
+    }
 `;
 
 export const StatusBar = styled.div<{ $color: string }>`

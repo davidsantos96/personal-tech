@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
+import { getTodayScheduleWithStudents } from '../../data/students';
 import { BottomNav } from '../../components/Layout/BottomNav';
 import {
     Container,
@@ -49,7 +51,7 @@ const CheckIcon = () => (
 const CalendarIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-         <path strokeLinecap="round" strokeLinejoin="round" d="M12 14h.01" strokeWidth={3}/>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 14h.01" strokeWidth={3} />
     </svg>
 );
 
@@ -65,69 +67,21 @@ const PlusIcon = () => (
     </svg>
 );
 
-interface AgendaItem {
+interface AgendaDisplayItem {
     id: string;
     type: 'filled' | 'free';
-    time?: string;
+    time: string;
     clientName?: string;
     activity?: string;
     avatar?: string;
     statusVariant?: 'default' | 'highlight' | 'free' | 'past';
     statusIcon?: 'check' | 'calendar' | 'clock';
     statusColor?: string;
+    studentId?: string;
 }
 
-const initialSchedule: AgendaItem[] = [
-    {
-        id: '1',
-        type: 'filled',
-        clientName: 'João Silva',
-        activity: 'Musculação • 60min',
-        avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80',
-        statusVariant: 'past',
-        statusIcon: 'check',
-        statusColor: '#22C55E'
-    },
-    {
-        id: '2',
-        type: 'filled',
-        clientName: 'Maria Souza',
-        activity: 'Pilates • 45min',
-        avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80',
-        statusVariant: 'highlight',
-        statusIcon: 'calendar',
-        statusColor: '#FF6D00'
-    },
-    {
-        id: '3',
-        type: 'free'
-    },
-    {
-        id: '4',
-        type: 'filled',
-        clientName: 'Carlos Lima',
-        activity: 'Treino Funcional • 60min',
-        avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80',
-        statusVariant: 'past',
-        statusIcon: 'check',
-        statusColor: '#22C55E'
-    },
-    {
-        id: '5',
-        type: 'filled',
-        clientName: 'Ana Clara',
-        activity: 'Yoga • 60min',
-        avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=688&q=80',
-        statusVariant: 'default',
-        statusIcon: 'clock',
-        statusColor: '#94a3b8'
-    }
-];
-
-const TIME_SLOTS = ['08:00', '09:30', '11:00', '12:30', '14:00'];
-
 const RenderIcon = ({ name, color }: { name?: string, color?: string }) => {
-    switch(name) {
+    switch (name) {
         case 'check': return <StatusIcon $color={color}><CheckIcon /></StatusIcon>;
         case 'calendar': return <StatusIcon $color={color}><CalendarIcon /></StatusIcon>;
         case 'clock': return <StatusIcon $color={color}><ClockIcon /></StatusIcon>;
@@ -136,7 +90,43 @@ const RenderIcon = ({ name, color }: { name?: string, color?: string }) => {
 };
 
 export const Agenda = () => {
-    const [schedule, setSchedule] = useState<AgendaItem[]>(initialSchedule);
+    const navigate = useNavigate();
+    const scheduleWithStudents = getTodayScheduleWithStudents();
+
+    // Build agenda items from centralized data, add a free slot
+    const buildAgendaItems = (): AgendaDisplayItem[] => {
+        const items: AgendaDisplayItem[] = [];
+
+        scheduleWithStudents.forEach((entry, index) => {
+            items.push({
+                id: entry.id,
+                type: 'filled',
+                time: entry.time,
+                clientName: entry.student?.name || 'Aluno',
+                activity: `${entry.type} • ${entry.detail.split(' • ')[0]}`,
+                avatar: entry.student?.avatar,
+                statusVariant: entry.statusVariant,
+                statusIcon: entry.statusIcon,
+                statusColor: entry.statusColor,
+                studentId: entry.studentId
+            });
+
+            // Add a free slot after the second item
+            if (index === 1) {
+                items.push({
+                    id: 'free-1',
+                    type: 'free',
+                    time: '10:30'
+                });
+            }
+        });
+
+        return items;
+    };
+
+    const [schedule, setSchedule] = useState<AgendaDisplayItem[]>(buildAgendaItems());
+
+    const TIME_SLOTS = schedule.map(item => item.time || 'Extra');
 
     const onDragEnd = (result: DropResult) => {
         if (!result.destination) {
@@ -155,7 +145,7 @@ export const Agenda = () => {
             <HeaderRow>
                 <HeaderTitle>
                     <Title>Agenda</Title>
-                    <Subtitle>Outubro, 2023</Subtitle>
+                    <Subtitle>Fevereiro, 2026</Subtitle>
                 </HeaderTitle>
                 <HeaderActions>
                     <IconButton aria-label="Notificações">
@@ -167,11 +157,11 @@ export const Agenda = () => {
 
             <CalendarStrip>
                 {[
-                    { day: 'SEG', num: '14' },
-                    { day: 'TER', num: '15', active: true },
-                    { day: 'QUA', num: '16' },
-                    { day: 'QUI', num: '17' },
-                    { day: 'SEX', num: '18' },
+                    { day: 'SEG', num: '09' },
+                    { day: 'TER', num: '10' },
+                    { day: 'QUA', num: '11' },
+                    { day: 'QUI', num: '12', active: true },
+                    { day: 'SEX', num: '13' },
                 ].map((date) => (
                     <DayCard key={date.num} $active={date.active}>
                         <DayLabel $active={date.active}>{date.day}</DayLabel>
@@ -182,22 +172,21 @@ export const Agenda = () => {
 
             <TimelineContainer>
                 <TimelineLine />
-                
+
                 <DragDropContext onDragEnd={onDragEnd}>
                     <Droppable droppableId="agenda-timeline">
                         {(provided) => (
-                            <div 
-                                {...provided.droppableProps} 
+                            <div
+                                {...provided.droppableProps}
                                 ref={provided.innerRef}
                                 style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
                             >
                                 {schedule.map((item, index) => {
-                                    // Visual logic: Insert 'NOW' after the first item (08:00) 
-                                    const showNowIndicator = index === 1; 
+                                    const showNowIndicator = index === 1;
 
                                     return (
                                         <div key={item.id}>
-                                             {showNowIndicator && (
+                                            {showNowIndicator && (
                                                 <NowIndicator>
                                                     <TimelineDot $active />
                                                     <NowLabel>AGORA</NowLabel>
@@ -231,7 +220,11 @@ export const Agenda = () => {
                                                                 </div>
                                                             </AppointmentCard>
                                                         ) : (
-                                                            <AppointmentCard $variant={item.statusVariant}>
+                                                            <AppointmentCard
+                                                                $variant={item.statusVariant}
+                                                                onClick={() => item.studentId && navigate(`/perfil-aluno/${item.studentId}`)}
+                                                                style={{ cursor: item.studentId ? 'pointer' : 'default' }}
+                                                            >
                                                                 <CardContent>
                                                                     <ClientAvatar src={item.avatar} />
                                                                     <ClientInfo>
@@ -254,7 +247,7 @@ export const Agenda = () => {
                     </Droppable>
                 </DragDropContext>
             </TimelineContainer>
-            
+
             <AddFab>
                 <PlusIcon />
             </AddFab>

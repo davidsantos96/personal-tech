@@ -20,7 +20,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/alunos" element={<Students />} />
             <Route path="/agenda" element={<Agenda />} />
-            <Route path="/perfil-aluno" element={<StudentProfile />} />
+            <Route path="/perfil-aluno/:id" element={<StudentProfile />} />
             <Route path="/montar-treino" element={<WorkoutBuilder />} />
             <Route path="/biblioteca-exercicios" element={<ExerciseLibrary />} />
             <Route path="/treino-sessao" element={<WorkoutSession />} />

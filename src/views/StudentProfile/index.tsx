@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { getStudentById } from '../../data/students';
 import {
     Container,
     Header,
@@ -60,7 +61,7 @@ const ChevronRightIcon = () => (
 
 const DumbbellIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-         <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18M3 18h18M8 6v12M16 6v12" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18M3 18h18M8 6v12M16 6v12" />
     </svg>
 );
 
@@ -73,7 +74,6 @@ const RunIcon = () => (
 const LampIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
         <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clipRule="evenodd" />
-        {/* Simplified bulb/idea icon approximation since we are using basic svgs */}
     </svg>
 );
 
@@ -92,6 +92,14 @@ const EditNoteIcon = () => (
 
 export const StudentProfile = () => {
     const navigate = useNavigate();
+    const { id } = useParams<{ id: string }>();
+    const student = id ? getStudentById(id) : undefined;
+
+    // Fallback data if student not found (for backwards compatibility)
+    const studentName = student?.name || 'João Victor Silva';
+    const studentAvatar = student?.avatar || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80';
+    const studentGoal = student?.goal?.toUpperCase() || 'HIPERTROFIA';
+    const studentStatus = student?.isActive ? `• Ativo` : '• Inativo';
 
     return (
         <Container>
@@ -107,15 +115,15 @@ export const StudentProfile = () => {
 
             <ProfileSection>
                 <AvatarWrapper>
-                    <Avatar src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80" alt="João Victor Silva" />
+                    <Avatar src={studentAvatar} alt={studentName} />
                     <EditBadge>
                         <EditIcon />
                     </EditBadge>
                 </AvatarWrapper>
-                <StudentName>João Victor Silva</StudentName>
+                <StudentName>{studentName}</StudentName>
                 <TagsRow>
-                    <GoalTag>HIPERTROFIA</GoalTag>
-                    <ActiveTime>• Ativo há 6 meses</ActiveTime>
+                    <GoalTag>{studentGoal}</GoalTag>
+                    <ActiveTime>{studentStatus}</ActiveTime>
                 </TagsRow>
             </ProfileSection>
 
@@ -134,7 +142,7 @@ export const StudentProfile = () => {
                 <StatCard>
                     <StatLabel>Treinos/Mês</StatLabel>
                     <StatValue>18</StatValue>
-                    <StatTrend>↑ +2</StatTrend> {/* Default color or make yellow logic if needed */}
+                    <StatTrend>↑ +2</StatTrend>
                 </StatCard>
             </StatsGrid>
 
