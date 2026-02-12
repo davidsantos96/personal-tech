@@ -194,9 +194,9 @@ export const StudentProfile = () => {
             </GoalCard>
 
             <BottomActions>
-                <PrimaryButton>
+                <PrimaryButton onClick={() => navigate('/montar-treino')}>
                     <PlayIcon />
-                    Iniciar Novo Treino
+                    Criar Novo Treino
                 </PrimaryButton>
                 <SecondaryButton>
                     <EditNoteIcon />

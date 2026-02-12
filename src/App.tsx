@@ -6,6 +6,7 @@ import { Home } from './views/Home';
 import { Students } from './views/Students';
 import { Agenda } from './views/Agenda';
 import { StudentProfile } from './views/StudentProfile';
+import { WorkoutBuilder } from './views/WorkoutBuilder';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
             <Route path="/alunos" element={<Students />} />
             <Route path="/agenda" element={<Agenda />} />
             <Route path="/perfil-aluno" element={<StudentProfile />} />
+            <Route path="/montar-treino" element={<WorkoutBuilder />} />
           </Routes>
         </div>
       </BrowserRouter>
