@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { getTodayScheduleWithStudents } from '../../../data/students';
+import { useSchedule } from '../../../contexts/ScheduleContext';
 import {
     ListSection,
     SectionHeader,
@@ -17,10 +17,10 @@ import {
 
 export const StudentsList = () => {
     const navigate = useNavigate();
-    const scheduleWithStudents = getTodayScheduleWithStudents();
+    const { filledSchedule } = useSchedule();
 
     // Show the next 3 upcoming sessions
-    const upcomingStudents = scheduleWithStudents.slice(0, 3);
+    const upcomingStudents = filledSchedule.slice(0, 3);
 
     return (
         <ListSection>

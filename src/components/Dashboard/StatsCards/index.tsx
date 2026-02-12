@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getActiveStudents, getTodayScheduleWithStudents, todaySchedule } from '../../../data/students';
+import { getActiveStudents } from '../../../data/students';
+import { useSchedule } from '../../../contexts/ScheduleContext';
 import {
     StatsSection,
     Card,
@@ -53,10 +54,8 @@ export const StatsCards = () => {
     const navigate = useNavigate();
 
     const activeStudents = getActiveStudents();
-    const scheduleWithStudents = getTodayScheduleWithStudents();
+    const { filledSchedule, totalWorkouts, completedWorkouts, pendingWorkouts } = useSchedule();
 
-    const completedCount = todaySchedule.filter(s => s.statusVariant === 'past').length;
-    const pendingCount = todaySchedule.length - completedCount;
 
     const handleOverlayClick = (e: React.MouseEvent) => {
         if (e.target === e.currentTarget) {
@@ -89,7 +88,7 @@ export const StatsCards = () => {
                     </CardHeader>
                     <div>
                         <CardLabel>Treinos Hoje</CardLabel>
-                        <CardValue>{todaySchedule.length.toString().padStart(2, '0')}</CardValue>
+                        <CardValue>{totalWorkouts.toString().padStart(2, '0')}</CardValue>
                     </div>
                 </Card>
             </StatsSection>
@@ -150,20 +149,20 @@ export const StatsCards = () => {
 
                         <ModalSummary>
                             <SummaryCard>
-                                <SummaryValue>{todaySchedule.length}</SummaryValue>
+                                <SummaryValue>{totalWorkouts}</SummaryValue>
                                 <SummaryLabel>Total</SummaryLabel>
                             </SummaryCard>
                             <SummaryCard>
-                                <SummaryValue style={{ color: '#22C55E' }}>{completedCount}</SummaryValue>
+                                <SummaryValue style={{ color: '#22C55E' }}>{completedWorkouts}</SummaryValue>
                                 <SummaryLabel>Concluídos</SummaryLabel>
                             </SummaryCard>
                             <SummaryCard>
-                                <SummaryValue style={{ color: '#FF6D00' }}>{pendingCount}</SummaryValue>
+                                <SummaryValue style={{ color: '#FF6D00' }}>{pendingWorkouts}</SummaryValue>
                                 <SummaryLabel>Pendentes</SummaryLabel>
                             </SummaryCard>
                         </ModalSummary>
 
-                        {scheduleWithStudents.map((entry) => (
+                        {filledSchedule.map((entry) => (
                             <ScheduleItem
                                 key={entry.id}
                                 onClick={() => {

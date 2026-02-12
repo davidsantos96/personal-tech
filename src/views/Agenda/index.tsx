@@ -1,7 +1,6 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
-import { getTodayScheduleWithStudents } from '../../data/students';
+import { useSchedule } from '../../contexts/ScheduleContext';
 import { BottomNav } from '../../components/Layout/BottomNav';
 import {
     Container,
@@ -67,18 +66,7 @@ const PlusIcon = () => (
     </svg>
 );
 
-interface AgendaDisplayItem {
-    id: string;
-    type: 'filled' | 'free';
-    time: string;
-    clientName?: string;
-    activity?: string;
-    avatar?: string;
-    statusVariant?: 'default' | 'highlight' | 'free' | 'past';
-    statusIcon?: 'check' | 'calendar' | 'clock';
-    statusColor?: string;
-    studentId?: string;
-}
+
 
 const RenderIcon = ({ name, color }: { name?: string, color?: string }) => {
     switch (name) {
@@ -91,53 +79,17 @@ const RenderIcon = ({ name, color }: { name?: string, color?: string }) => {
 
 export const Agenda = () => {
     const navigate = useNavigate();
-    const scheduleWithStudents = getTodayScheduleWithStudents();
 
-    // Build agenda items from centralized data, add a free slot
-    const buildAgendaItems = (): AgendaDisplayItem[] => {
-        const items: AgendaDisplayItem[] = [];
 
-        scheduleWithStudents.forEach((entry, index) => {
-            items.push({
-                id: entry.id,
-                type: 'filled',
-                time: entry.time,
-                clientName: entry.student?.name || 'Aluno',
-                activity: `${entry.type} • ${entry.detail.split(' • ')[0]}`,
-                avatar: entry.student?.avatar,
-                statusVariant: entry.statusVariant,
-                statusIcon: entry.statusIcon,
-                statusColor: entry.statusColor,
-                studentId: entry.studentId
-            });
-
-            // Add a free slot after the second item
-            if (index === 1) {
-                items.push({
-                    id: 'free-1',
-                    type: 'free',
-                    time: '10:30'
-                });
-            }
-        });
-
-        return items;
-    };
-
-    const [schedule, setSchedule] = useState<AgendaDisplayItem[]>(buildAgendaItems());
-
-    const TIME_SLOTS = schedule.map(item => item.time || 'Extra');
+    const { agendaItems, reorderAgenda } = useSchedule();
+    const TIME_SLOTS = agendaItems.map(item => item.time || 'Extra');
 
     const onDragEnd = (result: DropResult) => {
         if (!result.destination) {
             return;
         }
 
-        const items = Array.from(schedule);
-        const [reorderedItem] = items.splice(result.source.index, 1);
-        items.splice(result.destination.index, 0, reorderedItem);
-
-        setSchedule(items);
+        reorderAgenda(result.source.index, result.destination.index);
     };
 
     return (
@@ -181,7 +133,7 @@ export const Agenda = () => {
                                 ref={provided.innerRef}
                                 style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
                             >
-                                {schedule.map((item, index) => {
+                                {agendaItems.map((item, index) => {
                                     const showNowIndicator = index === 1;
 
                                     return (
