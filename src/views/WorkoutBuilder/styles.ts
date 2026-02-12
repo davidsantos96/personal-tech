@@ -220,6 +220,8 @@ export const ExerciseContent = styled.div`
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    min-width: 0;
+    overflow: hidden;
 `;
 
 export const ExerciseName = styled.h3`
@@ -241,13 +243,15 @@ export const MuscleGroup = styled.p`
 
 export const ExerciseStats = styled.div`
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: 1fr 1fr 1fr 1.4fr;
     gap: 0.5rem;
     margin-top: 0.75rem;
+    width: 100%;
+    overflow: hidden;
 
     @media (max-width: ${theme.screens.xs}) {
         gap: 0.375rem;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: 1fr 1fr 1fr 1.4fr;
     }
 `;
 
@@ -258,6 +262,8 @@ export const StatBox = styled.div`
     padding: 0.5rem;
     background-color: ${theme.colors.backgroundDark};
     border-radius: ${theme.borderRadius.DEFAULT};
+    overflow: hidden;
+    min-width: 0;
 
     @media (max-width: ${theme.screens.xs}) {
         padding: 0.375rem 0.25rem;
@@ -268,6 +274,7 @@ export const StatLabel = styled.span`
     font-size: 0.75rem;
     color: ${theme.colors.text.slate400};
     margin-bottom: 0.25rem;
+    white-space: nowrap;
 
     @media (max-width: ${theme.screens.xs}) {
         font-size: 0.625rem;
@@ -278,6 +285,10 @@ export const StatValue = styled.span`
     font-size: 1rem;
     font-weight: 600;
     color: ${theme.colors.text.white};
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.125rem;
 
     @media (max-width: ${theme.screens.xs}) {
         font-size: 0.875rem;
@@ -293,6 +304,68 @@ export const StatValue = styled.span`
             font-size: 0.625rem;
         }
     }
+`;
+
+export const StatInput = styled.input`
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: ${theme.colors.text.white};
+    background: transparent;
+    border: none;
+    outline: none;
+    text-align: center;
+    width: 100%;
+    max-width: 3.5rem;
+    min-width: 2rem;
+    padding: 0.125rem;
+    cursor: text;
+    box-sizing: border-box;
+
+    @media (max-width: ${theme.screens.xs}) {
+        font-size: 0.75rem;
+        max-width: 3rem;
+    }
+
+    &:focus {
+        background-color: ${theme.colors.surfaceDark};
+        border-radius: ${theme.borderRadius.DEFAULT};
+    }
+`;
+
+export const StatInputRest = styled.input`
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: ${theme.colors.text.white};
+    background: transparent;
+    border: none;
+    outline: none;
+    text-align: center;
+    width: auto;
+    min-width: 1.5rem;
+    max-width: 2rem;
+    padding: 0.125rem;
+    cursor: text;
+    box-sizing: border-box;
+
+    @media (max-width: ${theme.screens.xs}) {
+        font-size: 0.75rem;
+        min-width: 1.25rem;
+        max-width: 1.75rem;
+    }
+
+    &:focus {
+        background-color: ${theme.colors.surfaceDark};
+        border-radius: ${theme.borderRadius.DEFAULT};
+    }
+`;
+
+export const StatValueWrapper = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    white-space: nowrap;
+    flex-wrap: nowrap;
 `;
 
 export const DeleteButton = styled.button`

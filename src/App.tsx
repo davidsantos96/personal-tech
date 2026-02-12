@@ -7,6 +7,7 @@ import { Students } from './views/Students';
 import { Agenda } from './views/Agenda';
 import { StudentProfile } from './views/StudentProfile';
 import { WorkoutBuilder } from './views/WorkoutBuilder';
+import { ExerciseLibrary } from './views/ExerciseLibrary';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="/agenda" element={<Agenda />} />
             <Route path="/perfil-aluno" element={<StudentProfile />} />
             <Route path="/montar-treino" element={<WorkoutBuilder />} />
+            <Route path="/biblioteca-exercicios" element={<ExerciseLibrary />} />
           </Routes>
         </div>
       </BrowserRouter>

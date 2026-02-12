@@ -23,7 +23,9 @@ import {
     ExerciseStats,
     StatBox,
     StatLabel,
-    StatValue,
+    StatInput,
+    StatInputRest,
+    StatValueWrapper,
     AddExerciseButton,
     SaveButton
 } from '../WorkoutBuilder/styles';
@@ -91,22 +93,36 @@ export const WorkoutBuilder = () => {
         }
     ]);
 
+    // Formata o tempo de descanso (segundos para minutos se > 60)
+    const formatRestTime = (seconds: string): string => {
+        const sec = parseInt(seconds);
+        if (isNaN(sec)) return '0s';
+        
+        if (sec >= 60) {
+            const minutes = Math.floor(sec / 60);
+            const remainingSeconds = sec % 60;
+            if (remainingSeconds === 0) {
+                return `${minutes}min`;
+            }
+            return `${minutes}min ${remainingSeconds}s`;
+        }
+        return `${sec}s`;
+    };
+
+    // Atualiza um campo específico de um exercício
+    const handleUpdateExercise = (id: number, field: keyof Exercise, value: string) => {
+        setExercises(exercises.map(ex => 
+            ex.id === id ? { ...ex, [field]: value } : ex
+        ));
+    };
+
     const handleDeleteExercise = (id: number) => {
         setExercises(exercises.filter(ex => ex.id !== id));
     };
 
     const handleAddExercise = () => {
-        // Placeholder for adding new exercise
-        const newExercise: Exercise = {
-            id: exercises.length + 1,
-            name: 'Novo Exercício',
-            muscleGroup: '',
-            series: '0',
-            reps: '0',
-            weight: '0',
-            rest: '0'
-        };
-        setExercises([...exercises, newExercise]);
+        // Navega para a biblioteca de exercícios
+        navigate('/biblioteca-exercicios');
     };
 
     const handleSave = () => {
@@ -161,19 +177,56 @@ export const WorkoutBuilder = () => {
                                 <ExerciseStats>
                                     <StatBox>
                                         <StatLabel>Séries</StatLabel>
-                                        <StatValue>{exercise.series}</StatValue>
+                                        <StatInput
+                                            type="text"
+                                            value={exercise.series}
+                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                                                handleUpdateExercise(exercise.id, 'series', e.target.value)
+                                            }
+                                        />
                                     </StatBox>
                                     <StatBox>
                                         <StatLabel>Reps</StatLabel>
-                                        <StatValue>{exercise.reps}</StatValue>
+                                        <StatInput
+                                            type="text"
+                                            value={exercise.reps}
+                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                                                handleUpdateExercise(exercise.id, 'reps', e.target.value)
+                                            }
+                                        />
                                     </StatBox>
                                     <StatBox>
                                         <StatLabel>Carga</StatLabel>
-                                        <StatValue>{exercise.weight} <span>kg</span></StatValue>
+                                        <StatValueWrapper>
+                                            <StatInput
+                                                type="text"
+                                                value={exercise.weight}
+                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                                                    handleUpdateExercise(exercise.id, 'weight', e.target.value)
+                                                }
+                                            />
+                                            <span style={{ fontSize: '0.625rem', color: '#94a3b8' }}>kg</span>
+                                        </StatValueWrapper>
                                     </StatBox>
                                     <StatBox>
                                         <StatLabel>Descanso</StatLabel>
-                                        <StatValue>{exercise.rest} <span>s</span></StatValue>
+                                        <StatValueWrapper>
+                                            <StatInputRest
+                                                type="text"
+                                                value={exercise.rest}
+                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                                                    handleUpdateExercise(exercise.id, 'rest', e.target.value)
+                                                }
+                                                onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+                                                    // Ao sair do campo, mantém apenas o valor numérico
+                                                    const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                                                    if (numericValue) {
+                                                        handleUpdateExercise(exercise.id, 'rest', numericValue);
+                                                    }
+                                                }}
+                                            />
+                                            <span style={{ fontSize: '0.5rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>{formatRestTime(exercise.rest)}</span>
+                                        </StatValueWrapper>
                                     </StatBox>
                                 </ExerciseStats>
                             </ExerciseContent>
