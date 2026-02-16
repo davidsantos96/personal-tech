@@ -151,6 +151,8 @@ export const ModalCloseButton = styled.button`
     border: none;
     width: 36px;
     height: 36px;
+    padding: 0;
+    line-height: 0;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -167,6 +169,10 @@ export const ModalCloseButton = styled.button`
     svg {
         width: 18px;
         height: 18px;
+        display: block;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2.5;
     }
 `;
 

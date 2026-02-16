@@ -36,6 +36,8 @@ export const AddButton = styled.button`
   border: none;
   width: 48px;
   height: 48px;
+  padding: 0;
+  line-height: 0;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -51,6 +53,10 @@ export const AddButton = styled.button`
   svg {
     width: 24px;
     height: 24px;
+    display: block;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.5;
   }
 `;
 

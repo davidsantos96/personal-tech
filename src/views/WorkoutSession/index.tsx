@@ -26,6 +26,9 @@ import {
     ExerciseDetail,
     DetailLabel,
     DetailValue,
+    ExecutionControl,
+    ExecutionStartButton,
+    ExecutionEstimate,
     ExerciseNotes,
     FloatingActions,
     FinishButton,
@@ -47,7 +50,15 @@ import {
     RestTimerTime,
     RestTimerExercise,
     RestTimerActions,
-    RestTimerButton
+    RestTimerButton,
+    ExecutionTimerModal,
+    ExecutionTimerContent,
+    ExecutionTimerLabel,
+    ExecutionTimerCircle,
+    ExecutionTimerTime,
+    ExecutionTimerExercise,
+    ExecutionTimerActions,
+    ExecutionTimerButton
 } from './styles';
 
 // Icons
@@ -94,6 +105,7 @@ interface Exercise {
     reps: string;
     weight: string;
     rest: number;
+    estimatedExecutionTime?: number;
     notes?: string;
     completed: boolean;
 }
@@ -129,8 +141,18 @@ const mockWorkouts: Record<string, WorkoutData> = {
             { id: 4, name: 'Cadeira Flexora', series: 3, reps: '12-15', weight: '40kg', rest: 60, completed: false },
             { id: 5, name: 'Stiff', series: 3, reps: '10-12', weight: '40kg', rest: 90, completed: false },
             { id: 6, name: 'Panturrilha em Pé', series: 4, reps: '15-20', weight: '80kg', rest: 45, notes: 'Amplitude completa', completed: false },
+            { id: 7, name: 'Prancha', series: 3, reps: '45s', weight: '-', rest: 45, estimatedExecutionTime: 45, notes: 'Manter abdômen contraído durante toda a série', completed: false },
         ]
     }
+};
+
+const TIMED_EXERCISE_MAP: Record<string, number> = {
+    prancha: 45,
+    isometria: 30,
+    'wall sit': 45,
+    'hollow hold': 30,
+    'ponte estática': 40,
+    'superman hold': 30,
 };
 
 export const WorkoutSession = () => {
@@ -148,6 +170,12 @@ export const WorkoutSession = () => {
     const [restTimeLeft, setRestTimeLeft] = useState(0);
     const [restExercise, setRestExercise] = useState<Exercise | null>(null);
     const [restPaused, setRestPaused] = useState(false);
+
+    // Execution timer states (for timed exercises like plank)
+    const [isExecutionTiming, setIsExecutionTiming] = useState(false);
+    const [executionTimeLeft, setExecutionTimeLeft] = useState(0);
+    const [executionExercise, setExecutionExercise] = useState<Exercise | null>(null);
+    const [executionPaused, setExecutionPaused] = useState(false);
     
     // Series completed counter for each exercise
     const [seriesCompleted, setSeriesCompleted] = useState<Record<number, number>>({});
@@ -185,6 +213,24 @@ export const WorkoutSession = () => {
         return () => clearInterval(interval);
     }, [isResting, restPaused, restTimeLeft]);
 
+    // Execution timer effect
+    useEffect(() => {
+        let interval: number;
+        if (isExecutionTiming && !executionPaused && executionTimeLeft > 0) {
+            interval = setInterval(() => {
+                setExecutionTimeLeft((prev) => {
+                    if (prev <= 1) {
+                        setIsExecutionTiming(false);
+                        setExecutionExercise(null);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [isExecutionTiming, executionPaused, executionTimeLeft]);
+
     const formatTime = (seconds: number): string => {
         const hrs = Math.floor(seconds / 3600);
         const mins = Math.floor((seconds % 3600) / 60);
@@ -221,6 +267,31 @@ export const WorkoutSession = () => {
         const secs = seconds % 60;
         return secs > 0 ? `${mins}min ${secs}s` : `${mins}min`;
     };
+
+    const formatCountdown = (seconds: number): string => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const getEstimatedExecutionTime = (exercise: Exercise): number | null => {
+        if (exercise.estimatedExecutionTime && exercise.estimatedExecutionTime > 0) {
+            return exercise.estimatedExecutionTime;
+        }
+
+        const normalizedName = exercise.name.toLowerCase();
+        const mapped = Object.entries(TIMED_EXERCISE_MAP).find(([key]) => normalizedName.includes(key));
+        if (mapped) {
+            return mapped[1];
+        }
+
+        const repsInSeconds = exercise.reps.match(/(\d+)\s*s/i);
+        if (repsInSeconds) {
+            return Number(repsInSeconds[1]);
+        }
+
+        return null;
+    };
     
     const handleStartRest = (exercise: Exercise) => {
         // Increment series counter when starting rest
@@ -243,6 +314,31 @@ export const WorkoutSession = () => {
     
     const handleToggleRestPause = () => {
         setRestPaused(!restPaused);
+    };
+
+    const handleStartExecution = (exercise: Exercise, estimatedSeconds: number) => {
+        setExecutionExercise(exercise);
+        setExecutionTimeLeft(estimatedSeconds);
+        setIsExecutionTiming(true);
+        setExecutionPaused(false);
+    };
+
+    const handleSkipExecution = () => {
+        setIsExecutionTiming(false);
+        setExecutionTimeLeft(0);
+        setExecutionExercise(null);
+        setExecutionPaused(false);
+    };
+
+    const handleToggleExecutionPause = () => {
+        setExecutionPaused(!executionPaused);
+    };
+
+    const getExecutionProgress = (): number => {
+        if (!executionExercise) return 0;
+        const estimated = getEstimatedExecutionTime(executionExercise);
+        if (!estimated || estimated <= 0) return 0;
+        return ((estimated - executionTimeLeft) / estimated) * 100;
     };
     
     const getRestProgress = (): number => {
@@ -289,7 +385,10 @@ export const WorkoutSession = () => {
                 </SectionHeader>
 
                 <ExercisesList>
-                    {workout.exercises.map((exercise) => (
+                    {workout.exercises.map((exercise) => {
+                        const estimatedExecutionTime = getEstimatedExecutionTime(exercise);
+
+                        return (
                         <ExerciseCard key={exercise.id} $completed={exercise.completed}>
                             <CheckboxWrapper>
                                 <Checkbox
@@ -324,6 +423,22 @@ export const WorkoutSession = () => {
                                         <DetailLabel>Descanso</DetailLabel>
                                         <DetailValue>{formatRestTime(exercise.rest)}</DetailValue>
                                     </ExerciseDetail>
+                                    {estimatedExecutionTime && (
+                                        <ExerciseDetail>
+                                            <DetailLabel>Tempo</DetailLabel>
+                                            <ExecutionControl>
+                                                <ExecutionStartButton
+                                                    type="button"
+                                                    onClick={() => handleStartExecution(exercise, estimatedExecutionTime)}
+                                                    aria-label={`Iniciar execução de ${exercise.name}`}
+                                                    title={`Iniciar execução (${formatRestTime(estimatedExecutionTime)})`}
+                                                >
+                                                    <ClockIcon />
+                                                </ExecutionStartButton>
+                                                <ExecutionEstimate>{formatRestTime(estimatedExecutionTime)}</ExecutionEstimate>
+                                            </ExecutionControl>
+                                        </ExerciseDetail>
+                                    )}
                                 </ExerciseDetails>
                                 {exercise.notes && (
                                     <ExerciseNotes>{exercise.notes}</ExerciseNotes>
@@ -334,7 +449,8 @@ export const WorkoutSession = () => {
                                 </RestButton>
                             </ExerciseContent>
                         </ExerciseCard>
-                    ))}
+                        );
+                    })}
                 </ExercisesList>
             </ExercisesSection>
 
@@ -379,6 +495,37 @@ export const WorkoutSession = () => {
                     </RestTimerActions>
                 </RestTimerContent>
             </RestTimerModal>
+
+            <ExecutionTimerModal $show={isExecutionTiming}>
+                <ExecutionTimerContent>
+                    <ExecutionTimerLabel>Execução</ExecutionTimerLabel>
+                    {executionExercise && (
+                        <ExecutionTimerExercise>{executionExercise.name}</ExecutionTimerExercise>
+                    )}
+                    <ExecutionTimerCircle $progress={getExecutionProgress()}>
+                        <ExecutionTimerTime>{formatCountdown(executionTimeLeft)}</ExecutionTimerTime>
+                    </ExecutionTimerCircle>
+                    <ExecutionTimerActions>
+                        <ExecutionTimerButton $secondary onClick={handleSkipExecution}>
+                            <ForwardIcon />
+                            Encerrar
+                        </ExecutionTimerButton>
+                        <ExecutionTimerButton onClick={handleToggleExecutionPause}>
+                            {executionPaused ? (
+                                <>
+                                    <PlayIcon />
+                                    Continuar
+                                </>
+                            ) : (
+                                <>
+                                    <PauseIcon />
+                                    Pausar
+                                </>
+                            )}
+                        </ExecutionTimerButton>
+                    </ExecutionTimerActions>
+                </ExecutionTimerContent>
+            </ExecutionTimerModal>
 
             <CelebrationModal $show={showCelebration}>
                 <CelebrationContent>

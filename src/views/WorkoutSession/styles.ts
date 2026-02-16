@@ -216,7 +216,7 @@ export const SeriesBadge = styled.span`
 
 export const ExerciseDetails = styled.div`
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 0.5rem;
     margin-bottom: 0.5rem;
 `;
@@ -237,6 +237,44 @@ export const DetailValue = styled.span`
     font-size: 0.875rem;
     font-weight: 600;
     color: ${theme.colors.text.white};
+`;
+
+export const ExecutionControl = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+`;
+
+export const ExecutionStartButton = styled.button`
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 1px solid rgba(255, 109, 0, 0.4);
+    border-radius: ${theme.borderRadius.full};
+    background-color: rgba(255, 109, 0, 0.15);
+    color: ${theme.colors.primary};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.2s;
+
+    svg {
+        width: 0.875rem;
+        height: 0.875rem;
+        display: block;
+    }
+
+    &:hover {
+        background-color: rgba(255, 109, 0, 0.25);
+        border-color: rgba(255, 109, 0, 0.65);
+    }
+`;
+
+export const ExecutionEstimate = styled.span`
+    font-size: 0.8125rem;
+    color: ${theme.colors.text.slate400};
+    font-weight: 600;
 `;
 
 export const ExerciseNotes = styled.p`
@@ -544,3 +582,25 @@ export const RestTimerButton = styled.button<{ $secondary?: boolean }>`
         box-shadow: ${props => props.$secondary ? 'none' : '0 8px 24px rgba(255, 109, 0, 0.4)'};
     }
 `;
+
+export const ExecutionTimerModal = styled(RestTimerModal)``;
+
+export const ExecutionTimerContent = styled(RestTimerContent)``;
+
+export const ExecutionTimerLabel = styled(RestTimerLabel)``;
+
+export const ExecutionTimerCircle = styled(RestTimerCircle)``;
+
+export const ExecutionTimerTime = styled(RestTimerTime)`
+    font-size: 2.75rem;
+
+    @media (max-width: ${theme.screens.xs}) {
+        font-size: 2.375rem;
+    }
+`;
+
+export const ExecutionTimerExercise = styled(RestTimerExercise)``;
+
+export const ExecutionTimerActions = styled(RestTimerActions)``;
+
+export const ExecutionTimerButton = styled(RestTimerButton)``;

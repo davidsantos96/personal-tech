@@ -37,6 +37,7 @@ export const BackButton = styled.button`
     border: none;
     cursor: pointer;
     padding: 0.5rem;
+    line-height: 0;
     color: ${theme.colors.text.white};
     display: flex;
     align-items: center;
@@ -45,6 +46,9 @@ export const BackButton = styled.button`
     svg {
         width: 24px;
         height: 24px;
+        display: block;
+        stroke: currentColor;
+        fill: none;
     }
 
     &:hover {
@@ -238,6 +242,8 @@ export const ExerciseMuscles = styled.p`
 export const AddButton = styled.button`
     width: 2.5rem;
     height: 2.5rem;
+    padding: 0;
+    line-height: 0;
     background-color: ${theme.colors.primary};
     border: none;
     border-radius: ${theme.borderRadius.full};
@@ -252,8 +258,10 @@ export const AddButton = styled.button`
     svg {
         width: 20px;
         height: 20px;
+        display: block;
         stroke: currentColor;
         fill: none;
+        stroke-width: 2.5;
     }
 
     &:hover {
