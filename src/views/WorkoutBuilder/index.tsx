@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BuilderExerciseItem, type BuilderExercise } from '../../components/BuilderExerciseItem';
 import {
     Container,
     Header,
@@ -14,18 +15,6 @@ import {
     SectionHeader,
     ExerciseCount,
     ExercisesList,
-    ExerciseCard,
-    ExerciseNumber,
-    ExerciseContent,
-    ExerciseName,
-    MuscleGroup,
-    DeleteButton,
-    ExerciseStats,
-    StatBox,
-    StatLabel,
-    StatInput,
-    StatInputRest,
-    StatValueWrapper,
     AddExerciseButton,
     SaveButton
 } from '../WorkoutBuilder/styles';
@@ -37,33 +26,17 @@ const ChevronLeftIcon = () => (
     </svg>
 );
 
-const TrashIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-    </svg>
-);
-
 const PlusIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
     </svg>
 );
 
-interface Exercise {
-    id: number;
-    name: string;
-    muscleGroup: string;
-    series: string;
-    reps: string;
-    weight: string;
-    rest: string;
-}
-
 export const WorkoutBuilder = () => {
     const navigate = useNavigate();
     const [workoutName, setWorkoutName] = useState('');
     const [selectedStudent, setSelectedStudent] = useState('');
-    const [exercises, setExercises] = useState<Exercise[]>([
+    const [exercises, setExercises] = useState<BuilderExercise[]>([
         {
             id: 1,
             name: 'Supino Reto',
@@ -110,7 +83,7 @@ export const WorkoutBuilder = () => {
     };
 
     // Atualiza um campo específico de um exercício
-    const handleUpdateExercise = (id: number, field: keyof Exercise, value: string) => {
+    const handleUpdateExercise = (id: number, field: keyof BuilderExercise, value: string) => {
         setExercises(exercises.map(ex => 
             ex.id === id ? { ...ex, [field]: value } : ex
         ));
@@ -169,71 +142,14 @@ export const WorkoutBuilder = () => {
 
                 <ExercisesList>
                     {exercises.map((exercise, index) => (
-                        <ExerciseCard key={exercise.id}>
-                            <ExerciseNumber>{index + 1}</ExerciseNumber>
-                            <ExerciseContent>
-                                <ExerciseName>{exercise.name}</ExerciseName>
-                                <MuscleGroup>{exercise.muscleGroup}</MuscleGroup>
-                                <ExerciseStats>
-                                    <StatBox>
-                                        <StatLabel>Séries</StatLabel>
-                                        <StatInput
-                                            type="text"
-                                            value={exercise.series}
-                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                                                handleUpdateExercise(exercise.id, 'series', e.target.value)
-                                            }
-                                        />
-                                    </StatBox>
-                                    <StatBox>
-                                        <StatLabel>Reps</StatLabel>
-                                        <StatInput
-                                            type="text"
-                                            value={exercise.reps}
-                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                                                handleUpdateExercise(exercise.id, 'reps', e.target.value)
-                                            }
-                                        />
-                                    </StatBox>
-                                    <StatBox>
-                                        <StatLabel>Carga</StatLabel>
-                                        <StatValueWrapper>
-                                            <StatInput
-                                                type="text"
-                                                value={exercise.weight}
-                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                                                    handleUpdateExercise(exercise.id, 'weight', e.target.value)
-                                                }
-                                            />
-                                            <span style={{ fontSize: '0.625rem', color: '#94a3b8' }}>kg</span>
-                                        </StatValueWrapper>
-                                    </StatBox>
-                                    <StatBox>
-                                        <StatLabel>Descanso</StatLabel>
-                                        <StatValueWrapper>
-                                            <StatInputRest
-                                                type="text"
-                                                value={exercise.rest}
-                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                                                    handleUpdateExercise(exercise.id, 'rest', e.target.value)
-                                                }
-                                                onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
-                                                    // Ao sair do campo, mantém apenas o valor numérico
-                                                    const numericValue = e.target.value.replace(/[^0-9]/g, '');
-                                                    if (numericValue) {
-                                                        handleUpdateExercise(exercise.id, 'rest', numericValue);
-                                                    }
-                                                }}
-                                            />
-                                            <span style={{ fontSize: '0.5rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>{formatRestTime(exercise.rest)}</span>
-                                        </StatValueWrapper>
-                                    </StatBox>
-                                </ExerciseStats>
-                            </ExerciseContent>
-                            <DeleteButton onClick={() => handleDeleteExercise(exercise.id)} aria-label="Deletar exercício">
-                                <TrashIcon />
-                            </DeleteButton>
-                        </ExerciseCard>
+                        <BuilderExerciseItem
+                            key={exercise.id}
+                            exercise={exercise}
+                            index={index}
+                            formatRestTime={formatRestTime}
+                            onUpdate={handleUpdateExercise}
+                            onDelete={handleDeleteExercise}
+                        />
                     ))}
                 </ExercisesList>
 

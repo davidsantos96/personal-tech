@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { getWorkout, TIMED_EXERCISE_MAP, type WorkoutData, type WorkoutExercise as Exercise } from '../../services/workoutService';
+import { WorkoutExerciseItem } from '../../components/WorkoutExerciseItem';
 import {
     Container,
     Header,
@@ -16,20 +18,6 @@ import {
     SectionTitle,
     ProgressText,
     ExercisesList,
-    ExerciseCard,
-    CheckboxWrapper,
-    Checkbox,
-    ExerciseContent,
-    ExerciseName,
-    SeriesBadge,
-    ExerciseDetails,
-    ExerciseDetail,
-    DetailLabel,
-    DetailValue,
-    ExecutionControl,
-    ExecutionStartButton,
-    ExecutionEstimate,
-    ExerciseNotes,
     FloatingActions,
     FinishButton,
     CelebrationModal,
@@ -42,7 +30,6 @@ import {
     CelebrationStatValue,
     CelebrationStatLabel,
     CelebrationButton,
-    RestButton,
     RestTimerModal,
     RestTimerContent,
     RestTimerLabel,
@@ -86,81 +73,20 @@ const CheckCircleIcon = () => (
     </svg>
 );
 
-const ClockIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-        <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clipRule="evenodd" />
-    </svg>
-);
-
 const ForwardIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
         <path d="M5.055 7.06c-1.25-.714-2.805.189-2.805 1.628v8.123c0 1.44 1.555 2.342 2.805 1.628L12 14.471v2.34c0 1.44 1.555 2.342 2.805 1.628l7.108-4.061c1.26-.72 1.26-2.536 0-3.256L14.805 7.06C13.555 6.346 12 7.25 12 8.688v2.34L5.055 7.06z" />
     </svg>
 );
 
-interface Exercise {
-    id: number;
-    name: string;
-    series: number;
-    reps: string;
-    weight: string;
-    rest: number;
-    estimatedExecutionTime?: number;
-    notes?: string;
-    completed: boolean;
-}
 
-interface WorkoutData {
-    name: string;
-    type: string;
-    exercises: Exercise[];
-}
-
-// Mock data - em produção viria de um contexto/API
-const mockWorkouts: Record<string, WorkoutData> = {
-    'treino-a': {
-        name: 'Treino A',
-        type: 'Superiores',
-        exercises: [
-            { id: 1, name: 'Supino Reto', series: 4, reps: '8-10', weight: '35kg', rest: 90, completed: false },
-            { id: 2, name: 'Supino Inclinado', series: 3, reps: '10-12', weight: '30kg', rest: 90, completed: false },
-            { id: 3, name: 'Crucifixo com Halteres', series: 3, reps: '12-15', weight: '12kg', rest: 60, completed: false },
-            { id: 4, name: 'Desenvolvimento com Barra', series: 4, reps: '8-10', weight: '25kg', rest: 90, completed: false },
-            { id: 5, name: 'Elevação Lateral', series: 3, reps: '12-15', weight: '8kg', rest: 60, notes: 'Manter controle no movimento', completed: false },
-            { id: 6, name: 'Tríceps Testa', series: 3, reps: '10-12', weight: '20kg', rest: 60, completed: false },
-            { id: 7, name: 'Tríceps Corda', series: 3, reps: '12-15', weight: '25kg', rest: 60, completed: false },
-        ]
-    },
-    'treino-b': {
-        name: 'Treino B',
-        type: 'Inferiores',
-        exercises: [
-            { id: 1, name: 'Agachamento Livre', series: 4, reps: '8-10', weight: '60kg', rest: 120, notes: 'Focar na profundidade', completed: false },
-            { id: 2, name: 'Leg Press 45°', series: 4, reps: '10-12', weight: '180kg', rest: 90, completed: false },
-            { id: 3, name: 'Cadeira Extensora', series: 3, reps: '12-15', weight: '45kg', rest: 60, completed: false },
-            { id: 4, name: 'Cadeira Flexora', series: 3, reps: '12-15', weight: '40kg', rest: 60, completed: false },
-            { id: 5, name: 'Stiff', series: 3, reps: '10-12', weight: '40kg', rest: 90, completed: false },
-            { id: 6, name: 'Panturrilha em Pé', series: 4, reps: '15-20', weight: '80kg', rest: 45, notes: 'Amplitude completa', completed: false },
-            { id: 7, name: 'Prancha', series: 3, reps: '45s', weight: '-', rest: 45, estimatedExecutionTime: 45, notes: 'Manter abdômen contraído durante toda a série', completed: false },
-        ]
-    }
-};
-
-const TIMED_EXERCISE_MAP: Record<string, number> = {
-    prancha: 45,
-    isometria: 30,
-    'wall sit': 45,
-    'hollow hold': 30,
-    'ponte estática': 40,
-    'superman hold': 30,
-};
 
 export const WorkoutSession = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const workoutId = location.state?.workoutId || 'treino-a';
     
-    const [workout, setWorkout] = useState<WorkoutData>(mockWorkouts[workoutId]);
+    const [workout, setWorkout] = useState<WorkoutData>(getWorkout(workoutId)!);
     const [isRunning, setIsRunning] = useState(false);
     const [elapsedTime, setElapsedTime] = useState(0);
     const [showCelebration, setShowCelebration] = useState(false);
@@ -387,68 +313,17 @@ export const WorkoutSession = () => {
                 <ExercisesList>
                     {workout.exercises.map((exercise) => {
                         const estimatedExecutionTime = getEstimatedExecutionTime(exercise);
-
                         return (
-                        <ExerciseCard key={exercise.id} $completed={exercise.completed}>
-                            <CheckboxWrapper>
-                                <Checkbox
-                                    type="checkbox"
-                                    checked={exercise.completed}
-                                    onChange={() => handleToggleExercise(exercise.id)}
-                                />
-                            </CheckboxWrapper>
-                            <ExerciseContent>
-                                <ExerciseName $completed={exercise.completed}>
-                                    {exercise.name}
-                                    {seriesCompleted[exercise.id] > 0 && (
-                                        <SeriesBadge>
-                                            ({seriesCompleted[exercise.id]}/{exercise.series})
-                                        </SeriesBadge>
-                                    )}
-                                </ExerciseName>
-                                <ExerciseDetails>
-                                    <ExerciseDetail>
-                                        <DetailLabel>Séries</DetailLabel>
-                                        <DetailValue>{exercise.series}</DetailValue>
-                                    </ExerciseDetail>
-                                    <ExerciseDetail>
-                                        <DetailLabel>Reps</DetailLabel>
-                                        <DetailValue>{exercise.reps}</DetailValue>
-                                    </ExerciseDetail>
-                                    <ExerciseDetail>
-                                        <DetailLabel>Carga</DetailLabel>
-                                        <DetailValue>{exercise.weight}</DetailValue>
-                                    </ExerciseDetail>
-                                    <ExerciseDetail>
-                                        <DetailLabel>Descanso</DetailLabel>
-                                        <DetailValue>{formatRestTime(exercise.rest)}</DetailValue>
-                                    </ExerciseDetail>
-                                    {estimatedExecutionTime && (
-                                        <ExerciseDetail>
-                                            <DetailLabel>Tempo</DetailLabel>
-                                            <ExecutionControl>
-                                                <ExecutionStartButton
-                                                    type="button"
-                                                    onClick={() => handleStartExecution(exercise, estimatedExecutionTime)}
-                                                    aria-label={`Iniciar execução de ${exercise.name}`}
-                                                    title={`Iniciar execução (${formatRestTime(estimatedExecutionTime)})`}
-                                                >
-                                                    <ClockIcon />
-                                                </ExecutionStartButton>
-                                                <ExecutionEstimate>{formatRestTime(estimatedExecutionTime)}</ExecutionEstimate>
-                                            </ExecutionControl>
-                                        </ExerciseDetail>
-                                    )}
-                                </ExerciseDetails>
-                                {exercise.notes && (
-                                    <ExerciseNotes>{exercise.notes}</ExerciseNotes>
-                                )}
-                                <RestButton onClick={() => handleStartRest(exercise)}>
-                                    <ClockIcon />
-                                    Iniciar Descanso ({formatRestTime(exercise.rest)})
-                                </RestButton>
-                            </ExerciseContent>
-                        </ExerciseCard>
+                            <WorkoutExerciseItem
+                                key={exercise.id}
+                                exercise={exercise}
+                                seriesCompleted={seriesCompleted[exercise.id] || 0}
+                                estimatedExecutionTime={estimatedExecutionTime}
+                                onToggle={handleToggleExercise}
+                                onStartRest={handleStartRest}
+                                onStartExecution={handleStartExecution}
+                                formatRestTime={formatRestTime}
+                            />
                         );
                     })}
                 </ExercisesList>
