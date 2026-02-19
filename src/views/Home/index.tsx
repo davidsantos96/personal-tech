@@ -5,6 +5,7 @@ import { StudentsList } from '../../components/Dashboard/StudentsList';
 import { AlertSection } from '../../components/Dashboard/AlertSection';
 import { RevenueWidget } from '../../components/Dashboard/RevenueWidget';
 import { BottomNav } from '../../components/Layout/BottomNav';
+import { SpeedDial } from '../../components/SpeedDial';
 
 export const Home = () => {
     return (
@@ -17,6 +18,7 @@ export const Home = () => {
                 <RevenueWidget />
             </ScrollArea>
             <BottomNav />
+            <SpeedDial />
         </HomeContainer>
     );
 };

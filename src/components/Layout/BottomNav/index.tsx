@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { AddButton, NavButton, NavContainer, NavLabel } from './styles';
+import { AddButtonSpacer, NavButton, NavContainer, NavLabel } from './styles';
 
 export const BottomNav = () => {
     const navigate = useNavigate();
@@ -23,9 +23,7 @@ export const BottomNav = () => {
                 <NavLabel>Alunos</NavLabel>
             </NavButton>
 
-            <AddButton>
-                <span className="material-symbols-outlined" style={{ fontSize: '28px' }}>add</span>
-            </AddButton>
+            <AddButtonSpacer />
 
             <NavButton
                 $active={location.pathname === '/agenda'} 

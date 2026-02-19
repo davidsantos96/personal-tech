@@ -65,3 +65,15 @@ export const AddButton = styled.button`
         transform: scale(1.05);
     }
 `;
+
+/**
+ * Invisible spacer that occupies the same slot as the FAB in the flex layout.
+ * The real interactive button is rendered via SpeedDial portal above the nav.
+ */
+export const AddButtonSpacer = styled.div`
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-top: -2rem;
+    flex-shrink: 0;
+    pointer-events: none;
+`;
