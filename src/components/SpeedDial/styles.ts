@@ -55,6 +55,9 @@ export const ActionsWrapper = styled.div`
   bottom: 130px;
   /* Right edge sits at (50% + 24px) from left, so icon center = 50% = trigger center */
   right: calc(50% - 24px);
+  /* max-width keeps left edge ≥ 1 rem from screen edge on narrow viewports:
+     left_edge = (50vw + 24px) - max-width ≥ 1rem  →  max-width ≤ 50vw + 8px */
+  max-width: calc(50vw + 8px);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -70,6 +73,7 @@ export const ActionRow = styled.div<{ $index: number; $total: number }>`
   pointer-events: all;
   cursor: pointer;
   opacity: 0;
+  max-width: 100%;
   /* Stagger: bottom item (highest $index) appears first → delay = (total - 1 - index) * 55ms */
   animation: ${itemIn} 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   animation-delay: ${({ $index, $total }) => ($total - 1 - $index) * 55}ms;
@@ -93,6 +97,11 @@ export const ActionLabelPill = styled.span`
   letter-spacing: 0.015em;
   user-select: none;
   transition: background 0.15s ease;
+  /* shrink & truncate when viewport is too narrow */
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   ${ActionRow}:hover & {
     background: rgba(30, 30, 30, 0.98);
