@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import {
     Backdrop,
@@ -59,6 +60,7 @@ interface Toast {
 }
 
 export const SpeedDial = () => {
+    const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
     const [toast, setToast] = useState<Toast | null>(null);
 
@@ -68,9 +70,21 @@ export const SpeedDial = () => {
 
     const handleAction = useCallback((action: Action) => {
         setIsOpen(false);
+        if (action.id === 'aluno') {
+            navigate('/novo-aluno');
+            return;
+        }
+        if (action.id === 'agendamento') {
+            navigate('/novo-agendamento');
+            return;
+        }
+        if (action.id === 'treino') {
+            navigate('/montar-treino');
+            return;
+        }
         setToast({ msg: action.toastMsg, key: Date.now() });
         setTimeout(() => setToast(null), 3500);
-    }, []);
+    }, [navigate]);
 
     /* Close on Escape */
     useEffect(() => {

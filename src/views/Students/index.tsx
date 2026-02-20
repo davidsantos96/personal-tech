@@ -51,7 +51,7 @@ export const Students = () => {
         <Container>
             <Header>
                 <Title>Meus Alunos</Title>
-                <AddButton aria-label="Adicionar aluno">
+                <AddButton aria-label="Adicionar aluno" onClick={() => navigate('/novo-aluno')}>
                     <PlusIcon />
                 </AddButton>
             </Header>
