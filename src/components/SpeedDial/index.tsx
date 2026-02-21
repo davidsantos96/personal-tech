@@ -70,6 +70,10 @@ export const SpeedDial = () => {
 
     const handleAction = useCallback((action: Action) => {
         setIsOpen(false);
+        if (action.id === 'avaliacao') {
+            navigate('/avaliacao-fisica');
+            return;
+        }
         if (action.id === 'aluno') {
             navigate('/novo-aluno');
             return;
