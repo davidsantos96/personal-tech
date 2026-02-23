@@ -7,6 +7,14 @@ export interface Student {
     status: 'updated' | 'expiring' | 'expired';
     statusLabel: string;
     isActive: boolean;
+    /** ISO date — when the current plan/contract expires */
+    planExpiresAt: string;
+    /** ISO date — last physical evaluation */
+    lastEvaluationAt: string;
+    /** ISO date — last attended training session */
+    lastTrainingAt: string;
+    /** ISO date — when the current workout series expires */
+    workoutSeriesExpiresAt: string;
 }
 
 export interface ScheduleEntry {
@@ -31,7 +39,11 @@ export const studentsData: Student[] = [
         goalIcon: 'dumbbell',
         status: 'updated',
         statusLabel: 'ATUALIZADO',
-        isActive: true
+        isActive: true,
+        planExpiresAt: '2026-03-23',
+        lastEvaluationAt: '2025-12-20',
+        lastTrainingAt: '2026-02-22',
+        workoutSeriesExpiresAt: '2026-02-24', // vence amanhã → treino_vencendo
     },
     {
         id: '2',
@@ -41,7 +53,11 @@ export const studentsData: Student[] = [
         goalIcon: 'scale',
         status: 'expiring',
         statusLabel: 'VENCE EM 2 DIAS',
-        isActive: true
+        isActive: true,
+        planExpiresAt: '2026-02-25', // vence em 2 dias → plano_vencendo
+        lastEvaluationAt: '2025-11-10',
+        lastTrainingAt: '2026-02-21',
+        workoutSeriesExpiresAt: '2026-03-10',
     },
     {
         id: '3',
@@ -51,7 +67,11 @@ export const studentsData: Student[] = [
         goalIcon: 'run',
         status: 'updated',
         statusLabel: 'ATUALIZADO',
-        isActive: true
+        isActive: true,
+        planExpiresAt: '2026-04-01',
+        lastEvaluationAt: '2025-11-15', // 100 dias → avaliacao_vencendo
+        lastTrainingAt: '2026-02-20',
+        workoutSeriesExpiresAt: '2026-03-01',
     },
     {
         id: '4',
@@ -61,7 +81,11 @@ export const studentsData: Student[] = [
         goalIcon: 'user',
         status: 'expired',
         statusLabel: 'VENCIDO',
-        isActive: false
+        isActive: false,
+        planExpiresAt: '2026-02-23', // vence hoje → plano_vencido
+        lastEvaluationAt: '2025-10-01',
+        lastTrainingAt: '2026-01-10', // 44 dias → aluno_inativo
+        workoutSeriesExpiresAt: '2026-02-01',
     },
     {
         id: '5',
@@ -71,7 +95,11 @@ export const studentsData: Student[] = [
         goalIcon: 'dumbbell',
         status: 'updated',
         statusLabel: 'ATUALIZADO',
-        isActive: true
+        isActive: true,
+        planExpiresAt: '2026-03-15',
+        lastEvaluationAt: '2025-12-01',
+        lastTrainingAt: '2026-01-15', // 39 dias → aluno_inativo
+        workoutSeriesExpiresAt: '2026-03-15',
     }
 ];
 

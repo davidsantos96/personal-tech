@@ -102,3 +102,23 @@ export const NotificationDot = styled.span`
     background-color: ${theme.colors.primary};
     border-radius: 9999px;
 `;
+
+export const NotificationBadge = styled.span<{ $critical: boolean }>`
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    background-color: ${props => props.$critical ? '#EF4444' : theme.colors.primary};
+    border: 1.5px solid #0a0a0a;
+    border-radius: 9999px;
+    font-size: 9px;
+    font-weight: 800;
+    font-family: ${theme.fonts.display};
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+`;
