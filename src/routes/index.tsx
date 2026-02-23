@@ -10,6 +10,7 @@ import { NewStudent } from '../views/NewStudent';
 import { ScheduleSession } from '../views/ScheduleSession';
 import { Anamnese } from '../views/NewAvaliation/Anamnese';
 import { AvaliacaoFisica } from '../views/NewAvaliation/AvaliacaoFisica';
+import { TrainerProfile } from '../views/TrainerProfile';
 
 export const AppRoutes = () => (
     <Routes>
@@ -24,5 +25,6 @@ export const AppRoutes = () => (
         <Route path="/novo-agendamento" element={<ScheduleSession />} />
         <Route path="/anamnese" element={<Anamnese />} />
         <Route path="/avaliacao-fisica" element={<AvaliacaoFisica />} />
+        <Route path="/perfil" element={<TrainerProfile />} />
     </Routes>
 );

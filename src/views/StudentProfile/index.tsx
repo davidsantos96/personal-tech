@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getStudentById } from '../../data/students';
 import {
     Container,
     Header,
+    HeaderRight,
     IconButton,
     PageTitle,
     ProfileSection,
@@ -31,7 +33,12 @@ import {
     GoalText,
     BottomActions,
     PrimaryButton,
-    SecondaryButton
+    SecondaryButton,
+    DropdownOverlay,
+    DropdownMenu,
+    DropdownItem,
+    WorkoutActions,
+    WorkoutActionButton
 } from './styles';
 
 // Icons
@@ -53,11 +60,6 @@ const EditIcon = () => (
     </svg>
 );
 
-const ChevronRightIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-    </svg>
-);
 
 const DumbbellIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -89,11 +91,37 @@ const EditNoteIcon = () => (
     </svg>
 );
 
+// Dropdown menu icons
+const RenewIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+    </svg>
+);
+
+const AssessmentIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+    </svg>
+);
+
+const EditSmallIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+    </svg>
+);
+
+const TrashIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+    </svg>
+);
+
 
 export const StudentProfile = () => {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
     const student = id ? getStudentById(id) : undefined;
+    const [menuOpen, setMenuOpen] = useState(false);
 
     // Fallback data if student not found (for backwards compatibility)
     const studentName = student?.name || 'João Victor Silva';
@@ -108,9 +136,26 @@ export const StudentProfile = () => {
                     <ChevronLeftIcon />
                 </IconButton>
                 <PageTitle>Perfil do Aluno</PageTitle>
-                <IconButton aria-label="Mais opções">
-                    <DotsVerticalIcon />
-                </IconButton>
+                <HeaderRight>
+                    <IconButton aria-label="Mais opções" onClick={() => setMenuOpen(!menuOpen)}>
+                        <DotsVerticalIcon />
+                    </IconButton>
+                    {menuOpen && (
+                        <>
+                            <DropdownOverlay onClick={() => setMenuOpen(false)} />
+                            <DropdownMenu>
+                                <DropdownItem onClick={() => { setMenuOpen(false); /* TODO: Renovar Plano */ }}>
+                                    <RenewIcon />
+                                    Renovar Plano
+                                </DropdownItem>
+                                <DropdownItem onClick={() => { setMenuOpen(false); navigate('/avaliacao-fisica'); }}>
+                                    <AssessmentIcon />
+                                    Atualizar Avaliação Física
+                                </DropdownItem>
+                            </DropdownMenu>
+                        </>
+                    )}
+                </HeaderRight>
             </Header>
 
             <ProfileSection>
@@ -159,9 +204,21 @@ export const StudentProfile = () => {
                         <HistoryTitle>Treino A - Superiores</HistoryTitle>
                         <HistorySubtitle>Ontem • 52 min • 420 kcal</HistorySubtitle>
                     </HistoryContent>
-                    <IconButton style={{ margin: 0, padding: 0 }}>
-                        <ChevronRightIcon />
-                    </IconButton>
+                    <WorkoutActions>
+                        <WorkoutActionButton
+                            title="Editar treino"
+                            onClick={(e) => { e.stopPropagation(); navigate('/treino-sessao', { state: { workoutId: 'treino-a' } }); }}
+                        >
+                            <EditSmallIcon />
+                        </WorkoutActionButton>
+                        <WorkoutActionButton
+                            $danger
+                            title="Remover treino"
+                            onClick={(e) => { e.stopPropagation(); /* TODO: Remover treino */ }}
+                        >
+                            <TrashIcon />
+                        </WorkoutActionButton>
+                    </WorkoutActions>
                 </HistoryItem>
 
                 <HistoryItem>
@@ -172,9 +229,21 @@ export const StudentProfile = () => {
                         <HistoryTitle>Cardio - HIIT</HistoryTitle>
                         <HistorySubtitle>Terça-feira • 30 min • 310 kcal</HistorySubtitle>
                     </HistoryContent>
-                    <IconButton style={{ margin: 0, padding: 0 }}>
-                        <ChevronRightIcon />
-                    </IconButton>
+                    <WorkoutActions>
+                        <WorkoutActionButton
+                            title="Editar treino"
+                            onClick={(e) => { e.stopPropagation(); navigate('/treino-sessao', { state: { workoutId: 'cardio-hiit' } }); }}
+                        >
+                            <EditSmallIcon />
+                        </WorkoutActionButton>
+                        <WorkoutActionButton
+                            $danger
+                            title="Remover treino"
+                            onClick={(e) => { e.stopPropagation(); /* TODO: Remover treino */ }}
+                        >
+                            <TrashIcon />
+                        </WorkoutActionButton>
+                    </WorkoutActions>
                 </HistoryItem>
 
                 <HistoryItem onClick={() => navigate('/treino-sessao', { state: { workoutId: 'treino-b' } })}>
@@ -185,9 +254,21 @@ export const StudentProfile = () => {
                         <HistoryTitle>Treino B - Inferiores</HistoryTitle>
                         <HistorySubtitle>Segunda-feira • 65 min • 550 kcal</HistorySubtitle>
                     </HistoryContent>
-                    <IconButton style={{ margin: 0, padding: 0 }}>
-                        <ChevronRightIcon />
-                    </IconButton>
+                    <WorkoutActions>
+                        <WorkoutActionButton
+                            title="Editar treino"
+                            onClick={(e) => { e.stopPropagation(); navigate('/treino-sessao', { state: { workoutId: 'treino-b' } }); }}
+                        >
+                            <EditSmallIcon />
+                        </WorkoutActionButton>
+                        <WorkoutActionButton
+                            $danger
+                            title="Remover treino"
+                            onClick={(e) => { e.stopPropagation(); /* TODO: Remover treino */ }}
+                        >
+                            <TrashIcon />
+                        </WorkoutActionButton>
+                    </WorkoutActions>
                 </HistoryItem>
             </HistoryList>
 

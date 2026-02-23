@@ -15,6 +15,10 @@ export const Container = styled.div`
   position: relative;
 `;
 
+export const HeaderRight = styled.div`
+  position: relative;
+`;
+
 export const Header = styled.header`
   display: flex;
   justify-content: space-between;
@@ -203,6 +207,8 @@ export const HistoryItem = styled.div`
   cursor: pointer;
   transition: transform 0.2s;
   border: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: visible;
 
   &:hover {
     transform: translateY(-2px);
@@ -326,5 +332,107 @@ export const SecondaryButton = styled.button`
   svg {
     width: 24px;
     height: 24px;
+  }
+`;
+
+// ====== Dropdown Menu (3-dots) ======
+
+export const DropdownOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 90;
+`;
+
+export const DropdownMenu = styled.div`
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: rgba(30, 30, 30, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: ${theme.borderRadius.lg};
+  min-width: 220px;
+  z-index: 100;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  animation: dropdownFadeIn 0.18s ease-out;
+
+  @keyframes dropdownFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+`;
+
+export const DropdownItem = styled.button<{ $danger?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: transparent;
+  border: none;
+  color: ${props => props.$danger ? '#EF4444' : theme.colors.text.white};
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  text-align: left;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+  }
+
+  &:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+`;
+
+// ====== Workout Action Buttons (edit/remove on each history item) ======
+
+export const WorkoutActions = styled.div`
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  margin-left: auto;
+  flex-shrink: 0;
+`;
+
+export const WorkoutActionButton = styled.button<{ $danger?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: ${props => props.$danger ? 'rgba(239, 68, 68, 0.1)' : 'rgba(255, 255, 255, 0.05)'};
+  border: 1px solid ${props => props.$danger ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255, 255, 255, 0.08)'};
+  color: ${props => props.$danger ? '#EF4444' : theme.colors.text.slate400};
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: ${props => props.$danger ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255, 255, 255, 0.1)'};
+    color: ${props => props.$danger ? '#F87171' : theme.colors.text.white};
+    transform: scale(1.08);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
   }
 `;
