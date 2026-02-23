@@ -17,7 +17,7 @@ export const theme = {
         sm: "640px",
     },
     fonts: {
-        display: "'Lexend', sans-serif"
+        display: "'Syne', sans-serif"
     },
     borderRadius: {
         DEFAULT: "0.5rem",

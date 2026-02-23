@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getActiveStudents } from '../../../data/students';
 import { useSchedule } from '../../../contexts/ScheduleContext';
+import { useSpeedDial } from '../../../contexts/SpeedDialContext';
 import {
     StatsSection,
     Card,
@@ -52,21 +53,31 @@ type ModalType = null | 'students' | 'workouts';
 export const StatsCards = () => {
     const [activeModal, setActiveModal] = useState<ModalType>(null);
     const navigate = useNavigate();
+    const { hideSpeedDial, showSpeedDial } = useSpeedDial();
 
     const activeStudents = getActiveStudents();
     const { filledSchedule, totalWorkouts, completedWorkouts, pendingWorkouts } = useSchedule();
 
+    const openModal = (modal: ModalType) => {
+        setActiveModal(modal);
+        hideSpeedDial();
+    };
+
+    const closeModal = () => {
+        setActiveModal(null);
+        showSpeedDial();
+    };
 
     const handleOverlayClick = (e: React.MouseEvent) => {
         if (e.target === e.currentTarget) {
-            setActiveModal(null);
+            closeModal();
         }
     };
 
     return (
         <>
             <StatsSection>
-                <Card onClick={() => setActiveModal('students')}>
+                <Card onClick={() => openModal('students')}>
                     <CardHeader>
                         <IconBox>
                             <span className="material-symbols-outlined" style={{ fontSize: '24px', color: '#FF6D00' }}>groups</span>
@@ -79,7 +90,7 @@ export const StatsCards = () => {
                     </div>
                 </Card>
 
-                <Card onClick={() => setActiveModal('workouts')}>
+                <Card onClick={() => openModal('workouts')}>
                     <CardHeader>
                         <IconBox>
                             <span className="material-symbols-outlined" style={{ fontSize: '24px', color: '#FF6D00' }}>fitness_center</span>
@@ -103,7 +114,7 @@ export const StatsCards = () => {
                                 <span className="material-symbols-outlined" style={{ fontSize: '22px', color: '#FF6D00' }}>groups</span>
                                 Alunos Ativos
                             </ModalTitle>
-                            <ModalCloseButton onClick={() => setActiveModal(null)}>
+                            <ModalCloseButton onClick={closeModal}>
                                 <CloseIcon />
                             </ModalCloseButton>
                         </ModalHeader>
@@ -112,7 +123,7 @@ export const StatsCards = () => {
                             <ActiveStudentItem
                                 key={student.id}
                                 onClick={() => {
-                                    setActiveModal(null);
+                                    closeModal();
                                     navigate(`/perfil-aluno/${student.id}`);
                                 }}
                             >
@@ -142,7 +153,7 @@ export const StatsCards = () => {
                                 <span className="material-symbols-outlined" style={{ fontSize: '22px', color: '#FF6D00' }}>fitness_center</span>
                                 Treinos Hoje
                             </ModalTitle>
-                            <ModalCloseButton onClick={() => setActiveModal(null)}>
+                            <ModalCloseButton onClick={closeModal}>
                                 <CloseIcon />
                             </ModalCloseButton>
                         </ModalHeader>
@@ -166,7 +177,7 @@ export const StatsCards = () => {
                             <ScheduleItem
                                 key={entry.id}
                                 onClick={() => {
-                                    setActiveModal(null);
+                                    closeModal();
                                     navigate(`/perfil-aluno/${entry.studentId}`);
                                 }}
                             >

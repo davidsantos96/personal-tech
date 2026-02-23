@@ -48,6 +48,19 @@ export const StatusIndicator = styled.div`
 
 export const UserInfo = styled.div``;
 
+export const BrandRow = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+`;
+
+export const RightActions = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+`;
+
 export const WelcomeText = styled.p`
     color: ${theme.colors.text.slate400};
     font-size: 0.875rem; /* text-sm */

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { useSchedule } from '../../contexts/ScheduleContext';
 import { BottomNav } from '../../components/Layout/BottomNav';
+import { LogoCircle } from '../../components/Logo';
 import {
     Container,
     HeaderRow,
@@ -96,7 +97,10 @@ export const Agenda = () => {
         <Container>
             <HeaderRow>
                 <HeaderTitle>
-                    <Title>Agenda</Title>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <LogoCircle size={28} id="agenda-logo" />
+                        <Title>Agenda</Title>
+                    </div>
                     <Subtitle>Fevereiro, 2026</Subtitle>
                 </HeaderTitle>
                 <HeaderActions>

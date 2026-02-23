@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { studentsData } from '../../services/studentService';
 import { StudentItem } from '../../components/StudentItem';
 import { BottomNav } from '../../components/Layout/BottomNav';
+import { LogoCircle } from '../../components/Logo';
 import {
     Container,
     Header,
@@ -50,7 +51,10 @@ export const Students = () => {
     return (
         <Container>
             <Header>
-                <Title>Meus Alunos</Title>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <LogoCircle size={28} id="students-logo" />
+                    <Title>Meus Alunos</Title>
+                </div>
                 <AddButton aria-label="Adicionar aluno" onClick={() => navigate('/novo-aluno')}>
                     <PlusIcon />
                 </AddButton>
