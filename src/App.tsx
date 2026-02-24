@@ -12,7 +12,12 @@ const MAIN_TABS = ['/', '/alunos', '/agenda', '/perfil'];
 const AppShell = () => {
   const { pathname } = useLocation();
   const { visible } = useSpeedDial();
-  const showSpeedDial = MAIN_TABS.includes(pathname) && visible;
+
+  // SpeedDial only for Personal Trainer main tabs and if visible context is true
+  const isPersonalTab = MAIN_TABS.includes(pathname);
+  const isStudentTab = pathname.startsWith('/aluno');
+
+  const showSpeedDial = isPersonalTab && !isStudentTab && visible;
   return (
     <div className="App">
       <AppRoutes />

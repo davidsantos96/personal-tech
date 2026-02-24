@@ -15,7 +15,7 @@ import {
     ExecutionEstimate,
     ExerciseNotes,
     RestButton,
-} from '../../views/WorkoutSession/styles';
+} from '../../views/Personal/WorkoutSession/styles';
 
 const ClockIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
