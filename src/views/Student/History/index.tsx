@@ -10,7 +10,7 @@ export const StudentHistory = () => {
 
             <div style={{ backgroundColor: '#1a1a1a', padding: '20px', borderRadius: '12px', textAlign: 'center', marginBottom: '30px' }}>
                 <div style={{ fontSize: '2rem' }}>🔥</div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{streak} Dias de Fogo!</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{streak} Dias de Foco!</div>
                 <div style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Sua melhor sequência atual</div>
             </div>
 
