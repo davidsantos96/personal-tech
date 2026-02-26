@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getExercises, getCategories, type Exercise } from '../../../services/exerciseService';
+import { searchExercises, getExercises, getCategories, type Exercise } from '../../../services/exerciseService';
 import type { BuilderExercise } from '../../../components/BuilderExerciseItem';
 import { ExerciseItem } from '../../../components/ExerciseItem';
 import { SelectedExerciseItem, type SelectedExercise } from '../../../components/SelectedExerciseItem';
@@ -31,7 +31,6 @@ const SearchIconSVG = () => (
     </svg>
 );
 
-const exercises = getExercises();
 const categories = getCategories();
 
 // State received from WorkoutBuilder
@@ -47,16 +46,39 @@ export const ExerciseLibrary = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const navState = (location.state as LibraryNavState | null) ?? {};
-    // IDs of exercises already in the workout, to prevent duplicates
     const existingIds = new Set((navState.exercises ?? []).map(ex => ex.id));
 
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('Todos');
     const [selectedExercises, setSelectedExercises] = useState<SelectedExercise[]>([]);
+    const [exercises, setExercises] = useState<Exercise[]>(getExercises());
+    const [loading, setLoading] = useState(false);
+
+    // Debounced search via Supabase
+    const fetchExercises = useCallback(async (query: string, category: string) => {
+        setLoading(true);
+        try {
+            const bodyPart = category !== 'Todos' ? category : undefined;
+            const results = await searchExercises(query || undefined, bodyPart, 40);
+            setExercises(results);
+        } catch {
+            // keep current list on error
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchExercises(searchTerm, selectedCategory);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchTerm, selectedCategory, fetchExercises]);
 
     const filteredExercises = exercises.filter(exercise => {
-        const matchesSearch = exercise.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            exercise.muscles.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = !searchTerm ||
+            exercise.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (exercise.muscle_group ?? '').toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory = selectedCategory === 'Todos' || exercise.category === selectedCategory;
         const notSelected = !selectedExercises.find(sel => sel.id === exercise.id);
         const notExisting = !existingIds.has(exercise.id);
@@ -73,11 +95,11 @@ export const ExerciseLibrary = () => {
         }]);
     };
 
-    const handleRemoveExercise = (id: number) => {
+    const handleRemoveExercise = (id: string) => {
         setSelectedExercises(selectedExercises.filter(ex => ex.id !== id));
     };
 
-    const handleUpdateExercise = (id: number, field: keyof SelectedExercise, value: string) => {
+    const handleUpdateExercise = (id: string, field: keyof SelectedExercise, value: string) => {
         setSelectedExercises(selectedExercises.map(ex =>
             ex.id === id ? { ...ex, [field]: value } : ex
         ));
@@ -88,11 +110,12 @@ export const ExerciseLibrary = () => {
         const addedExercises: BuilderExercise[] = selectedExercises.map(ex => ({
             id: ex.id,
             name: ex.name,
-            muscleGroup: ex.muscles || ex.category,
+            muscleGroup: ex.muscle_group || ex.category || '',
             series: ex.series,
             reps: ex.reps,
             weight: ex.weight,
             rest: ex.rest,
+            gifUrl: ex.gif_url || undefined,
         }));
 
         navigate('/montar-treino', {

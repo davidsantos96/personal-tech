@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import type { WorkoutExercise } from '../../services/workoutService';
+import { ExerciseDemoModal, type DemoModalData } from '../ExerciseDemoModal';
 import {
     ExerciseCard,
     CheckboxWrapper,
@@ -15,11 +17,18 @@ import {
     ExecutionEstimate,
     ExerciseNotes,
     RestButton,
+    DemoButton,
 } from '../../views/Personal/WorkoutSession/styles';
 
 const ClockIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
         <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clipRule="evenodd" />
+    </svg>
+);
+
+const PlayIconSVG = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M8 5v14l11-7z" />
     </svg>
 );
 
@@ -41,7 +50,11 @@ export const WorkoutExerciseItem = ({
     onStartRest,
     onStartExecution,
     formatRestTime,
-}: WorkoutExerciseItemProps) => (
+}: WorkoutExerciseItemProps) => {
+    const [demoData, setDemoData] = useState<DemoModalData | null>(null);
+
+    return (
+    <>
     <ExerciseCard $completed={exercise.completed}>
         <CheckboxWrapper>
             <Checkbox
@@ -100,6 +113,15 @@ export const WorkoutExerciseItem = ({
                 <ClockIcon />
                 Iniciar Descanso ({formatRestTime(exercise.rest)})
             </RestButton>
+            {exercise.gifUrl && (
+                <DemoButton onClick={() => setDemoData({ name: exercise.name, gifUrl: exercise.gifUrl! })}>
+                    <PlayIconSVG />
+                    Ver Demo
+                </DemoButton>
+            )}
         </ExerciseContent>
     </ExerciseCard>
-);
+    <ExerciseDemoModal data={demoData} onClose={() => setDemoData(null)} />
+    </>
+    );
+};

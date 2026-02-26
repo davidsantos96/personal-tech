@@ -20,21 +20,22 @@ const TrashIcon = () => (
 );
 
 export interface BuilderExercise {
-    id: number;
+    id: string;
     name: string;
     muscleGroup: string;
     series: string;
     reps: string;
     weight: string;
     rest: string;
+    gifUrl?: string;
 }
 
 interface BuilderExerciseItemProps {
     exercise: BuilderExercise;
     index: number;
     formatRestTime: (seconds: string) => string;
-    onUpdate: (id: number, field: keyof BuilderExercise, value: string) => void;
-    onDelete: (id: number) => void;
+    onUpdate: (id: string, field: keyof BuilderExercise, value: string) => void;
+    onDelete: (id: string) => void;
 }
 
 export const BuilderExerciseItem = ({

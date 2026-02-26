@@ -1,33 +1,98 @@
-export interface Exercise {
-    id: number;
-    name: string;
-    muscles: string;
-    category: string;
-}
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import type { Exercise as DBExercise } from '../lib/database.types';
 
-const exercises: Exercise[] = [
-    { id: 1, name: 'Supino Reto com Barra', muscles: 'Peitoral Maior, Tríceps', category: 'Peito' },
-    { id: 2, name: 'Agachamento Livre', muscles: 'Quadríceps, Glúteos', category: 'Pernas' },
-    { id: 3, name: 'Puxada Alta Frontal', muscles: 'Dorsais, Bíceps', category: 'Costas' },
-    { id: 4, name: 'Elevação Lateral', muscles: 'Deltoide Lateral', category: 'Ombros' },
-    { id: 5, name: 'Leg Press 45°', muscles: 'Quadríceps', category: 'Pernas' },
-    { id: 6, name: 'Rosca Direta', muscles: 'Bíceps', category: 'Braços' },
-    { id: 7, name: 'Desenvolvimento com Halteres', muscles: 'Deltoide Anterior', category: 'Ombros' },
-    { id: 8, name: 'Crucifixo Inclinado', muscles: 'Peitoral Superior', category: 'Peito' },
-    { id: 9, name: 'Remada Curvada', muscles: 'Dorsais, Trapézio', category: 'Costas' },
-    { id: 10, name: 'Extensão de Tríceps', muscles: 'Tríceps', category: 'Braços' },
+// Re-export the DB type with a friendlier alias
+export type Exercise = DBExercise;
+
+export const categories = ['Todos', 'Peito', 'Costas', 'Pernas', 'Ombros', 'Bracos', 'Core', 'Cardio'] as const;
+
+// ── Fallback (offline / mock) data ───────────────────────────
+const fallbackExercises: Exercise[] = [
+    { id: '1', name: 'Supino Reto com Barra', muscle_group: 'Peitoral Maior, Triceps', category: 'Peito', equipment: 'Barra', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
+    { id: '2', name: 'Agachamento Livre', muscle_group: 'Quadriceps, Gluteos', category: 'Pernas', equipment: 'Barra', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
+    { id: '3', name: 'Puxada Alta Frontal', muscle_group: 'Dorsais, Biceps', category: 'Costas', equipment: 'Cabo', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
+    { id: '4', name: 'Elevacao Lateral', muscle_group: 'Deltoide Lateral', category: 'Ombros', equipment: 'Halteres', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
+    { id: '5', name: 'Leg Press 45', muscle_group: 'Quadriceps', category: 'Pernas', equipment: 'Maquina', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
+    { id: '6', name: 'Rosca Direta', muscle_group: 'Biceps', category: 'Bracos', equipment: 'Barra', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
+    { id: '7', name: 'Desenvolvimento com Halteres', muscle_group: 'Deltoide Anterior', category: 'Ombros', equipment: 'Halteres', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
+    { id: '8', name: 'Crucifixo Inclinado', muscle_group: 'Peitoral Superior', category: 'Peito', equipment: 'Halteres', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
+    { id: '9', name: 'Remada Curvada', muscle_group: 'Dorsais, Trapezio', category: 'Costas', equipment: 'Barra', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
+    { id: '10', name: 'Extensao de Triceps', muscle_group: 'Triceps', category: 'Bracos', equipment: 'Cabo', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
 ];
 
-export const categories = ['Todos', 'Peito', 'Costas', 'Pernas', 'Ombros', 'Braços'] as const;
+/**
+ * Fetch exercises from Supabase.
+ * Uses the Edge Function (exercise-search) which checks DB cache first,
+ * then falls back to ExerciseDB API if configured.
+ * If Supabase is not configured, returns local fallback data.
+ */
+export async function searchExercises(
+    query?: string,
+    bodyPart?: string,
+    limit = 20,
+): Promise<Exercise[]> {
+    if (!isSupabaseConfigured) return fallbackExercises;
 
-export function getExercises(): Exercise[] {
-    return exercises;
+    try {
+        const { data, error } = await supabase.functions.invoke('exercise-search', {
+            body: { query, bodyPart, limit },
+        });
+
+        if (error) throw error;
+        return (data?.exercises as Exercise[]) ?? [];
+    } catch (err) {
+        console.error('[exerciseService] Edge function failed, querying table directly:', err);
+        // Fallback: query exercises table directly
+        return queryExercisesTable(query, bodyPart, limit);
+    }
 }
 
+/**
+ * Direct query to the exercises table (fallback when Edge Function is unavailable).
+ */
+async function queryExercisesTable(
+    query?: string,
+    category?: string,
+    limit = 20,
+): Promise<Exercise[]> {
+    try {
+        let q = supabase.from('exercises').select('*').limit(limit);
+        if (query) q = q.ilike('name', `%${query}%`);
+        if (category && category !== 'Todos') q = q.eq('category', category);
+        const { data, error } = await q;
+        if (error) throw error;
+        return (data as Exercise[]) ?? [];
+    } catch {
+        return fallbackExercises;
+    }
+}
+
+/** Get all categories (static list matching the DB CHECK constraint). */
 export function getCategories(): string[] {
     return [...categories];
 }
 
-export function getExerciseById(id: number): Exercise | undefined {
-    return exercises.find(ex => ex.id === id);
+/** Get a single exercise by UUID. */
+export async function getExerciseById(id: string): Promise<Exercise | undefined> {
+    if (!isSupabaseConfigured) return fallbackExercises.find(e => e.id === id);
+    try {
+        const { data, error } = await supabase
+            .from('exercises')
+            .select('*')
+            .eq('id', id)
+            .single();
+        if (error) throw error;
+        return data as Exercise;
+    } catch {
+        return fallbackExercises.find(e => e.id === id);
+    }
+}
+
+/**
+ * Synchronous fallback — returns offline mock data.
+ * Used by components that haven't migrated to async yet.
+ * @deprecated Migrate to searchExercises() instead.
+ */
+export function getExercises(): Exercise[] {
+    return fallbackExercises;
 }

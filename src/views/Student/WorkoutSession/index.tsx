@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getStudentWorkout, studentProfile, type StudentWorkoutExercise, type StudentWorkout } from '../../../data/studentPortal';
 import { addCompletedSession } from '../../../services/workoutHistoryService';
+import { ExerciseDemoModal, type DemoModalData } from '../../../components/ExerciseDemoModal';
 import {
     Container,
     Header,
@@ -32,7 +33,6 @@ import {
     ActionButton,
     DemoButton,
     ExerciseNotes,
-    GifContainer,
     FloatingActions,
     FinishButton,
     RestTimerModal,
@@ -100,7 +100,7 @@ export const StudentWorkoutSession = () => {
 
     // Series tracking
     const [seriesDone, setSeriesDone] = useState<Record<number, number>>({});
-    const [showDemo, setShowDemo] = useState<Record<number, boolean>>({});
+    const [demoData, setDemoData] = useState<DemoModalData | null>(null);
 
     // Modals
     const [restState, setRestState] = useState<{ active: boolean; time: number; exercise: StudentWorkoutExercise | null; paused: boolean }>({
@@ -283,17 +283,11 @@ export const StudentWorkoutSession = () => {
                                     )}
 
                                     {ex.gifUrl && (
-                                        <DemoButton onClick={() => setShowDemo(p => ({ ...p, [ex.id]: !p[ex.id] }))}>
-                                            <PlayIcon /> {showDemo[ex.id] ? 'Ocultar Demo' : 'Ver Demo'}
+                                        <DemoButton onClick={() => setDemoData({ name: ex.name, gifUrl: ex.gifUrl! })}>
+                                            <PlayIcon /> Ver Demo
                                         </DemoButton>
                                     )}
                                 </ActionRow>
-
-                                {showDemo[ex.id] && ex.gifUrl && (
-                                    <GifContainer>
-                                        <img src={ex.gifUrl} alt={ex.name} />
-                                    </GifContainer>
-                                )}
                             </ExerciseContent>
                         </ExerciseCard>
                     ))}
@@ -366,6 +360,8 @@ export const StudentWorkoutSession = () => {
                     <ModalButton onClick={() => navigate('/aluno')}>Concluir</ModalButton>
                 </CelebrationContent>
             </CelebrationModal>
+
+            <ExerciseDemoModal data={demoData} onClose={() => setDemoData(null)} />
         </Container>
     );
 };

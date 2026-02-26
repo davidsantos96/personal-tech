@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import type { Exercise } from '../../services/exerciseService';
+import { ExerciseDemoModal, type DemoModalData } from '../ExerciseDemoModal';
 import {
     ExerciseCard,
     ExerciseThumbnail,
@@ -26,19 +28,37 @@ interface ExerciseItemProps {
     onAdd: (exercise: Exercise) => void;
 }
 
-export const ExerciseItem = ({ exercise, onAdd }: ExerciseItemProps) => (
-    <ExerciseCard>
-        <ExerciseThumbnail>
-            <PlayIcon>
-                <PlayIconSVG />
-            </PlayIcon>
-        </ExerciseThumbnail>
-        <ExerciseInfo>
-            <ExerciseTitle>{exercise.name}</ExerciseTitle>
-            <ExerciseMuscles>{exercise.muscles}</ExerciseMuscles>
-        </ExerciseInfo>
-        <AddButton onClick={() => onAdd(exercise)}>
-            <PlusIcon />
-        </AddButton>
-    </ExerciseCard>
-);
+export const ExerciseItem = ({ exercise, onAdd }: ExerciseItemProps) => {
+    const [demoData, setDemoData] = useState<DemoModalData | null>(null);
+
+    return (
+        <>
+        <ExerciseCard>
+            <ExerciseThumbnail
+                onClick={() => exercise.gif_url && setDemoData({
+                    name: exercise.name,
+                    gifUrl: exercise.gif_url,
+                    muscleGroup: exercise.muscle_group || exercise.category,
+                })}
+                style={{ cursor: exercise.gif_url ? 'pointer' : 'default' }}
+            >
+                {exercise.gif_url ? (
+                    <img src={exercise.gif_url} alt={exercise.name} loading="lazy" />
+                ) : (
+                    <PlayIcon>
+                        <PlayIconSVG />
+                    </PlayIcon>
+                )}
+            </ExerciseThumbnail>
+            <ExerciseInfo>
+                <ExerciseTitle>{exercise.name}</ExerciseTitle>
+                <ExerciseMuscles>{exercise.muscle_group}</ExerciseMuscles>
+            </ExerciseInfo>
+            <AddButton onClick={() => onAdd(exercise)}>
+                <PlusIcon />
+            </AddButton>
+        </ExerciseCard>
+        <ExerciseDemoModal data={demoData} onClose={() => setDemoData(null)} />
+        </>
+    );
+};

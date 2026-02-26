@@ -87,13 +87,13 @@ export const WorkoutBuilder = () => {
     };
 
     // Atualiza um campo específico de um exercício
-    const handleUpdateExercise = (id: number, field: keyof BuilderExercise, value: string) => {
+    const handleUpdateExercise = (id: string, field: keyof BuilderExercise, value: string) => {
         setExercises(exercises.map(ex => 
             ex.id === id ? { ...ex, [field]: value } : ex
         ));
     };
 
-    const handleDeleteExercise = (id: number) => {
+    const handleDeleteExercise = (id: string) => {
         setExercises(exercises.filter(ex => ex.id !== id));
     };
 
@@ -154,6 +154,7 @@ export const WorkoutBuilder = () => {
                     weight: ex.weight ? `${ex.weight}kg` : '-',
                     rest: parseInt(ex.rest) || 60,
                     completed: false,
+                    gifUrl: ex.gifUrl,
                 })),
             });
 

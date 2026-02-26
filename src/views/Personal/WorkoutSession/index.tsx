@@ -107,6 +107,7 @@ export const WorkoutSession = () => {
                     weight: ex.weight,
                     rest: ex.rest,
                     notes: ex.notes,
+                    gifUrl: ex.gifUrl,
                     completed: false,
                 })),
             };

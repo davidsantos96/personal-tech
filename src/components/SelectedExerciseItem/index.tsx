@@ -25,8 +25,8 @@ export interface SelectedExercise extends Exercise {
 
 interface SelectedExerciseItemProps {
     exercise: SelectedExercise;
-    onRemove: (id: number) => void;
-    onUpdate: (id: number, field: keyof SelectedExercise, value: string) => void;
+    onRemove: (id: string) => void;
+    onUpdate: (id: string, field: keyof SelectedExercise, value: string) => void;
 }
 
 export const SelectedExerciseItem = ({ exercise, onRemove, onUpdate }: SelectedExerciseItemProps) => (
@@ -37,7 +37,7 @@ export const SelectedExerciseItem = ({ exercise, onRemove, onUpdate }: SelectedE
                     {exercise.name}
                 </ExerciseTitle>
                 <ExerciseMuscles style={{ fontSize: '0.75rem' }}>
-                    {exercise.muscles}
+                    {exercise.muscle_group}
                 </ExerciseMuscles>
             </div>
             <RemoveButton onClick={() => onRemove(exercise.id)}>

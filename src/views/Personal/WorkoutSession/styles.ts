@@ -464,6 +464,45 @@ export const RestButton = styled.button`
     }
 `;
 
+export const DemoButton = styled.button`
+    background-color: rgba(255, 255, 255, 0.05);
+    color: ${theme.colors.text.slate400};
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-top: 0.5rem;
+    transition: all 0.2s;
+
+    svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: ${theme.colors.text.white};
+    }
+`;
+
+export const GifContainer = styled.div`
+    margin-top: 0.75rem;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+
+    img {
+        width: 100%;
+        display: block;
+    }
+`;
+
 export const RestTimerModal = styled.div<{ $show?: boolean }>`
     position: fixed;
     inset: 0;

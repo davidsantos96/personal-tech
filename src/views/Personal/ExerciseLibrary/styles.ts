@@ -188,6 +188,13 @@ export const ExerciseThumbnail = styled.div`
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    overflow: hidden;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 
     @media (max-width: ${theme.screens.xs}) {
         width: 3.5rem;
