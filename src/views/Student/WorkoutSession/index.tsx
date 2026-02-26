@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getStudentWorkout, type StudentWorkoutExercise, type StudentWorkout } from '../../../data/studentPortal';
+import { getStudentWorkout, studentProfile, type StudentWorkoutExercise, type StudentWorkout } from '../../../data/studentPortal';
+import { addCompletedSession } from '../../../services/workoutHistoryService';
 import {
     Container,
     Header,
@@ -186,6 +187,25 @@ export const StudentWorkoutSession = () => {
 
     const handleFinish = () => {
         setIsRunning(false);
+
+        // Save completed session to shared history
+        if (workout) {
+            const completedExercises = workout.exercises.filter(ex => ex.completed).length;
+            addCompletedSession({
+                studentId: studentProfile.id,
+                workoutId: id || '',
+                workoutName: workout.name,
+                workoutType: workout.type,
+                date: new Date().toISOString().split('T')[0],
+                durationSeconds: elapsedTime,
+                durationMinutes: Math.round(elapsedTime / 60),
+                caloriesBurned: Math.round(elapsedTime * 0.15),
+                exercisesCompleted: completedExercises,
+                exercisesTotal: totalCount,
+                source: 'student',
+            });
+        }
+
         setShowCelebration(true);
     };
 

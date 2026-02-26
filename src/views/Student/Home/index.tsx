@@ -7,6 +7,38 @@ import {
     getMonthTrainingCount,
     trainingDays,
 } from '../../../data/studentPortal';
+import {
+    Container,
+    HeaderSection,
+    UserInfo,
+    Avatar,
+    Greeting,
+    UserName,
+    StreakBadge,
+    StreakValue,
+    WorkoutCard,
+    WorkoutLabel,
+    WorkoutName,
+    WorkoutMeta,
+    StartButton,
+    RestDayCard,
+    RestDayEmoji,
+    RestDayTitle,
+    RestDaySubtitle,
+    StatsGrid,
+    StatCard,
+    StatValue,
+    StatLabel,
+    WeekSection,
+    WeekSectionTitle,
+    WeekGrid,
+    DayColumn,
+    DayName,
+    DayCircle,
+    GoalCard,
+    GoalLabel,
+    GoalText,
+} from './styles';
 
 export const StudentHome = () => {
     const navigate = useNavigate();
@@ -15,7 +47,6 @@ export const StudentHome = () => {
     const now = new Date();
     const monthTrainings = getMonthTrainingCount(now.getFullYear(), now.getMonth());
 
-    // Build last 7 days for mini calendar
     const last7Days = Array.from({ length: 7 }, (_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - (6 - i));
@@ -38,160 +69,81 @@ export const StudentHome = () => {
     );
 
     return (
-        <div style={{ minHeight: '100vh', maxWidth: '28rem', margin: '0 auto', paddingBottom: '5rem' }}>
-            {/* Header */}
-            <div style={{ padding: '1.5rem 1rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <img
-                        src={studentProfile.avatar}
-                        alt={studentProfile.name}
-                        style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }}
-                    />
+        <Container>
+            <HeaderSection>
+                <UserInfo>
+                    <Avatar src={studentProfile.avatar} alt={studentProfile.name} />
                     <div>
-                        <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{getGreeting()}</div>
-                        <div style={{ fontSize: '1.15rem', fontWeight: 700 }}>
-                            {studentProfile.name.split(' ')[0]} 💪
-                        </div>
+                        <Greeting>{getGreeting()}</Greeting>
+                        <UserName>{studentProfile.name.split(' ')[0]} 💪</UserName>
                     </div>
-                </div>
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.35rem',
-                    background: '#1a1a1a',
-                    padding: '0.4rem 0.75rem',
-                    borderRadius: '999px',
-                    fontSize: '0.85rem',
-                }}>
-                    🔥 <span style={{ fontWeight: 700, color: '#FF6D00' }}>{streak}</span> dias
-                </div>
-            </div>
+                </UserInfo>
+                <StreakBadge>
+                    🔥 <StreakValue>{streak}</StreakValue> dias
+                </StreakBadge>
+            </HeaderSection>
 
-            {/* Today's Workout Card */}
             {todayWorkout ? (
-                <div style={{
-                    margin: '0 1rem',
-                    padding: '1.25rem',
-                    background: 'linear-gradient(135deg, #FF6D00 0%, #FF8F3F 100%)',
-                    borderRadius: '1rem',
-                    color: '#fff',
-                }}>
-                    <div style={{ fontSize: '0.75rem', opacity: 0.85, marginBottom: '0.25rem' }}>TREINO DE HOJE</div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.25rem' }}>{todayWorkout.name}</div>
-                    <div style={{ fontSize: '0.85rem', opacity: 0.9, marginBottom: '1rem' }}>
+                <WorkoutCard>
+                    <WorkoutLabel>TREINO DE HOJE</WorkoutLabel>
+                    <WorkoutName>{todayWorkout.name}</WorkoutName>
+                    <WorkoutMeta>
                         {todayWorkout.type} • {todayWorkout.exercises.length} exercícios • ~{todayWorkout.estimatedMinutes}min
-                    </div>
-                    <button
-                        onClick={() => navigate(`/aluno/treino/${todayWorkout.id}`)}
-                        style={{
-                            background: '#fff',
-                            color: '#FF6D00',
-                            border: 'none',
-                            borderRadius: '0.5rem',
-                            padding: '0.65rem 1.5rem',
-                            fontWeight: 700,
-                            fontSize: '0.9rem',
-                            cursor: 'pointer',
-                            fontFamily: "'Syne', sans-serif",
-                        }}
-                    >
+                    </WorkoutMeta>
+                    <StartButton onClick={() => navigate(`/aluno/treino/${todayWorkout.id}`)}>
                         ▶ Iniciar Treino
-                    </button>
-                </div>
+                    </StartButton>
+                </WorkoutCard>
             ) : (
-                <div style={{
-                    margin: '0 1rem',
-                    padding: '1.25rem',
-                    background: '#1a1a1a',
-                    borderRadius: '1rem',
-                    textAlign: 'center',
-                    color: '#94a3b8',
-                }}>
-                    <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>😴</div>
-                    <div style={{ fontWeight: 600 }}>Dia de descanso</div>
-                    <div style={{ fontSize: '0.85rem' }}>Aproveite para se recuperar!</div>
-                </div>
+                <RestDayCard>
+                    <RestDayEmoji>😴</RestDayEmoji>
+                    <RestDayTitle>Dia de descanso</RestDayTitle>
+                    <RestDaySubtitle>Aproveite para se recuperar!</RestDaySubtitle>
+                </RestDayCard>
             )}
 
-            {/* Quick Stats */}
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr 1fr',
-                gap: '0.75rem',
-                margin: '1.25rem 1rem',
-            }}>
-                <div style={{ background: '#1a1a1a', borderRadius: '0.75rem', padding: '1rem', textAlign: 'center' }}>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#FF6D00' }}>{monthTrainings}</div>
-                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.25rem' }}>Treinos este mês</div>
-                </div>
-                <div style={{ background: '#1a1a1a', borderRadius: '0.75rem', padding: '1rem', textAlign: 'center' }}>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#22C55E' }}>{streak}</div>
-                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.25rem' }}>Dias seguidos</div>
-                </div>
-                <div style={{ background: '#1a1a1a', borderRadius: '0.75rem', padding: '1rem', textAlign: 'center' }}>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#3B82F6' }}>{daysUntilEval}</div>
-                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.25rem' }}>Dias p/ avaliação</div>
-                </div>
-            </div>
+            <StatsGrid>
+                <StatCard>
+                    <StatValue>{monthTrainings}</StatValue>
+                    <StatLabel>Treinos este mês</StatLabel>
+                </StatCard>
+                <StatCard>
+                    <StatValue $color="#22C55E">{streak}</StatValue>
+                    <StatLabel>Dias seguidos</StatLabel>
+                </StatCard>
+                <StatCard>
+                    <StatValue $color="#3B82F6">{daysUntilEval}</StatValue>
+                    <StatLabel>Dias p/ avaliação</StatLabel>
+                </StatCard>
+            </StatsGrid>
 
-            {/* Weekly Mini Calendar */}
-            <div style={{ margin: '0 1rem 1.25rem' }}>
-                <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Última semana
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.5rem' }}>
+            <WeekSection>
+                <WeekSectionTitle>Última semana</WeekSectionTitle>
+                <WeekGrid>
                     {last7Days.map(day => {
                         const iso = formatDate(day);
                         const trained = trainingDays.includes(iso);
                         const isToday = iso === formatDate(new Date());
                         return (
-                            <div key={iso} style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '0.35rem',
-                            }}>
-                                <div style={{ fontSize: '0.65rem', color: '#64748b' }}>
-                                    {dayNames[day.getDay()]}
-                                </div>
-                                <div style={{
-                                    width: 36,
-                                    height: 36,
-                                    borderRadius: '50%',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: '0.8rem',
-                                    fontWeight: 600,
-                                    background: trained ? '#22C55E' : '#1a1a1a',
-                                    color: trained ? '#fff' : '#64748b',
-                                    border: isToday ? '2px solid #FF6D00' : '2px solid transparent',
-                                }}>
+                            <DayColumn key={iso}>
+                                <DayName>{dayNames[day.getDay()]}</DayName>
+                                <DayCircle $trained={trained} $isToday={isToday}>
                                     {trained ? '✓' : day.getDate()}
-                                </div>
-                            </div>
+                                </DayCircle>
+                            </DayColumn>
                         );
                     })}
-                </div>
-            </div>
+                </WeekGrid>
+            </WeekSection>
 
-            {/* Goal Card */}
-            <div style={{
-                margin: '0 1rem',
-                padding: '1rem',
-                background: '#1a1a1a',
-                borderRadius: '0.75rem',
-                borderLeft: '3px solid #FF6D00',
-            }}>
-                <div style={{ fontSize: '0.7rem', color: '#FF6D00', fontWeight: 700, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    🎯 PRÓXIMA META
-                </div>
-                <div style={{ fontSize: '0.85rem', color: '#e2e8f0', lineHeight: 1.5 }}>
+            <GoalCard>
+                <GoalLabel>🎯 PRÓXIMA META</GoalLabel>
+                <GoalText>
                     Aumentar carga no supino reto para 40kg cada lado até o fim da semana. Focar na cadência de descida.
-                </div>
-            </div>
+                </GoalText>
+            </GoalCard>
 
             <StudentBottomNav />
-        </div>
+        </Container>
     );
 };

@@ -3,7 +3,7 @@ import { theme } from "../../../styles/theme";
 
 export const Container = styled.div`
   padding: 1.5rem;
-  min-height: 100vh;
+  min-height: 100dvh;
   background-color: ${theme.colors.backgroundDark};
   color: ${theme.colors.text.white};
   padding-bottom: 5rem;
@@ -13,6 +13,15 @@ export const Container = styled.div`
   margin: 0 auto;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   position: relative;
+
+  @supports not (min-height: 100dvh) {
+    min-height: 100vh;
+  }
+
+  @media (max-width: ${theme.screens.xs}) {
+    padding: 1.25rem 1rem;
+    padding-bottom: 4.5rem;
+  }
 `;
 
 export const Header = styled.header`

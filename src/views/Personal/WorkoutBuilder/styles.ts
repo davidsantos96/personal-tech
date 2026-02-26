@@ -416,7 +416,7 @@ export const AddExerciseButton = styled.button`
     }
 `;
 
-export const SaveButton = styled.button`
+export const SaveButton = styled.button<{ disabled?: boolean }>`
     width: calc(100% - 2rem);
     margin: 2rem 1rem 1rem;
     padding: 1rem;
@@ -427,7 +427,11 @@ export const SaveButton = styled.button`
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s, background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 
     @media (max-width: ${theme.screens.xs}) {
         width: calc(100% - 1.5rem);
@@ -435,12 +439,61 @@ export const SaveButton = styled.button`
         padding: 0.875rem;
     }
 
-    &:hover {
+    &:hover:not(:disabled) {
         opacity: 0.9;
     }
 
-    &:active {
+    &:active:not(:disabled) {
         transform: scale(0.98);
+    }
+
+    &:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+`;
+
+export const ValidationError = styled.span`
+    display: block;
+    color: #EF4444;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+    padding-left: 0.25rem;
+`;
+
+export const SuccessToast = styled.div<{ $visible: boolean }>`
+    position: fixed;
+    top: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(${props => props.$visible ? '0' : '-120%'});
+    background: #22C55E;
+    color: #fff;
+    padding: 0.75rem 1.5rem;
+    border-radius: ${theme.borderRadius.lg};
+    font-weight: 600;
+    font-size: 0.9375rem;
+    box-shadow: 0 8px 24px rgba(34, 197, 94, 0.35);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: transform 0.35s ease;
+    pointer-events: ${props => props.$visible ? 'auto' : 'none'};
+`;
+
+export const Spinner = styled.span`
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
     }
 `;
 

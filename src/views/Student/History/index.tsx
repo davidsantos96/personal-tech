@@ -1,42 +1,62 @@
 import { sessionHistory, getStreak } from '../../../data/studentPortal';
 import { StudentBottomNav } from '../../../components/Layout/StudentBottomNav';
+import {
+    Container,
+    PageTitle,
+    StreakCard,
+    StreakEmoji,
+    StreakTitle,
+    StreakSubtitle,
+    SectionHeader,
+    SessionList,
+    SessionCard,
+    SessionTop,
+    SessionInfo,
+    SessionName,
+    SessionType,
+    SessionRight,
+    SessionDate,
+    SessionDuration,
+    SessionStats,
+    SessionStatItem,
+} from './styles';
 
 export const StudentHistory = () => {
     const streak = getStreak();
 
     return (
-        <div style={{ padding: '20px', color: 'white', backgroundColor: '#0a0a0a', minHeight: '100vh', paddingBottom: '100px' }}>
-            <h1 style={{ marginBottom: '20px' }}>Meu Histórico</h1>
+        <Container>
+            <PageTitle>Meu Histórico</PageTitle>
 
-            <div style={{ backgroundColor: '#1a1a1a', padding: '20px', borderRadius: '12px', textAlign: 'center', marginBottom: '30px' }}>
-                <div style={{ fontSize: '2rem' }}>🔥</div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{streak} Dias de Foco!</div>
-                <div style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Sua melhor sequência atual</div>
-            </div>
+            <StreakCard>
+                <StreakEmoji>🔥</StreakEmoji>
+                <StreakTitle>{streak} Dias de Foco!</StreakTitle>
+                <StreakSubtitle>Sua melhor sequência atual</StreakSubtitle>
+            </StreakCard>
 
-            <h2 style={{ fontSize: '1.1rem', marginBottom: '15px', borderBottom: '1px solid #333', paddingBottom: '10px' }}>Treinos Recentes</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <SectionHeader>Treinos Recentes</SectionHeader>
+            <SessionList>
                 {sessionHistory.map((session) => (
-                    <div key={session.id} style={{ backgroundColor: '#141414', padding: '15px', borderRadius: '12px', borderLeft: '4px solid #FF6D00' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                            <div>
-                                <div style={{ fontWeight: 'bold' }}>{session.workoutName}</div>
-                                <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{session.workoutType}</div>
-                            </div>
-                            <div style={{ textAlign: 'right' }}>
-                                <div style={{ fontSize: '0.9rem' }}>{new Date(session.date).toLocaleDateString('pt-BR')}</div>
-                                <div style={{ fontSize: '0.8rem', color: '#22C55E' }}>{session.durationMinutes} min</div>
-                            </div>
-                        </div>
-                        <div style={{ display: 'flex', gap: '15px', fontSize: '0.8rem', color: '#94a3b8', borderTop: '1px solid #222', paddingTop: '10px' }}>
-                            <span>🔥 {session.caloriesBurned} kcal</span>
-                            <span>✅ {session.exercisesCompleted}/{session.exercisesTotal} ex.</span>
-                        </div>
-                    </div>
+                    <SessionCard key={session.id}>
+                        <SessionTop>
+                            <SessionInfo>
+                                <SessionName>{session.workoutName}</SessionName>
+                                <SessionType>{session.workoutType}</SessionType>
+                            </SessionInfo>
+                            <SessionRight>
+                                <SessionDate>{new Date(session.date).toLocaleDateString('pt-BR')}</SessionDate>
+                                <SessionDuration>{session.durationMinutes} min</SessionDuration>
+                            </SessionRight>
+                        </SessionTop>
+                        <SessionStats>
+                            <SessionStatItem>🔥 {session.caloriesBurned} kcal</SessionStatItem>
+                            <SessionStatItem>✅ {session.exercisesCompleted}/{session.exercisesTotal} ex.</SessionStatItem>
+                        </SessionStats>
+                    </SessionCard>
                 ))}
-            </div>
+            </SessionList>
 
             <StudentBottomNav />
-        </div>
+        </Container>
     );
 };

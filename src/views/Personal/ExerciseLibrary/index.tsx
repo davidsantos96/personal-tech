@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { getExercises, getCategories, type Exercise } from '../../../services/exerciseService';
+import type { BuilderExercise } from '../../../components/BuilderExerciseItem';
 import { ExerciseItem } from '../../../components/ExerciseItem';
 import { SelectedExerciseItem, type SelectedExercise } from '../../../components/SelectedExerciseItem';
 import {
@@ -33,8 +34,22 @@ const SearchIconSVG = () => (
 const exercises = getExercises();
 const categories = getCategories();
 
+// State received from WorkoutBuilder
+interface LibraryNavState {
+    returnTo?: string;
+    workoutName?: string;
+    workoutType?: string;
+    selectedStudent?: string;
+    exercises?: BuilderExercise[];
+}
+
 export const ExerciseLibrary = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const navState = (location.state as LibraryNavState | null) ?? {};
+    // IDs of exercises already in the workout, to prevent duplicates
+    const existingIds = new Set((navState.exercises ?? []).map(ex => ex.id));
+
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('Todos');
     const [selectedExercises, setSelectedExercises] = useState<SelectedExercise[]>([]);
@@ -44,7 +59,8 @@ export const ExerciseLibrary = () => {
                             exercise.muscles.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory = selectedCategory === 'Todos' || exercise.category === selectedCategory;
         const notSelected = !selectedExercises.find(sel => sel.id === exercise.id);
-        return matchesSearch && matchesCategory && notSelected;
+        const notExisting = !existingIds.has(exercise.id);
+        return matchesSearch && matchesCategory && notSelected && notExisting;
     });
 
     const handleAddExercise = (exercise: Exercise) => {
@@ -68,9 +84,27 @@ export const ExerciseLibrary = () => {
     };
 
     const handleConfirm = () => {
-        // Aqui você pode passar os exercícios selecionados via state ou context
-        console.log('Exercícios adicionados:', selectedExercises);
-        navigate(-1);
+        // Convert selected exercises to BuilderExercise format and navigate back
+        const addedExercises: BuilderExercise[] = selectedExercises.map(ex => ({
+            id: ex.id,
+            name: ex.name,
+            muscleGroup: ex.muscles || ex.category,
+            series: ex.series,
+            reps: ex.reps,
+            weight: ex.weight,
+            rest: ex.rest,
+        }));
+
+        navigate('/montar-treino', {
+            state: {
+                workoutName: navState.workoutName,
+                workoutType: navState.workoutType,
+                selectedStudent: navState.selectedStudent,
+                exercises: navState.exercises ?? [],
+                addedExercises,
+            },
+            replace: true,
+        });
     };
 
     return (

@@ -437,3 +437,97 @@ export const WorkoutActionButton = styled.button<{ $danger?: boolean }>`
   }
 `;
 
+// ====== Saved Workout Cards (Treinos Ativos) ======
+
+export const WorkoutCardList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+`;
+
+export const WorkoutCard = styled.div`
+  background-color: ${theme.colors.surfaceCard};
+  border-radius: ${theme.borderRadius.xl};
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+`;
+
+export const WorkoutCardIcon = styled.div<{ $status?: string }>`
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background-color: ${props =>
+    props.$status === 'expired'
+        ? 'rgba(239, 68, 68, 0.1)'
+        : props.$status === 'expiring'
+            ? 'rgba(251, 191, 36, 0.1)'
+            : 'rgba(255, 109, 0, 0.1)'};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: ${props =>
+    props.$status === 'expired'
+        ? '#EF4444'
+        : props.$status === 'expiring'
+            ? '#FBBF24'
+            : theme.colors.primary};
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+`;
+
+export const WorkoutCardContent = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+export const WorkoutCardTitle = styled.div`
+  font-weight: 600;
+  color: ${theme.colors.text.white};
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+export const WorkoutCardSubtitle = styled.div`
+  font-size: 0.8125rem;
+  color: ${theme.colors.text.slate400};
+`;
+
+export const WorkoutStatusBadge = styled.span<{ $status?: string }>`
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background-color: ${props =>
+    props.$status === 'expired'
+        ? 'rgba(239, 68, 68, 0.15)'
+        : props.$status === 'expiring'
+            ? 'rgba(251, 191, 36, 0.15)'
+            : 'rgba(34, 197, 94, 0.15)'};
+  color: ${props =>
+    props.$status === 'expired'
+        ? '#EF4444'
+        : props.$status === 'expiring'
+            ? '#FBBF24'
+            : '#22C55E'};
+`;
+

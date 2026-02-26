@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getWorkout, TIMED_EXERCISE_MAP, type WorkoutData, type WorkoutExercise as Exercise } from '../../../services/workoutService';
+import { getWorkoutById } from '../../../services/studentWorkoutService';
+import { addCompletedSession } from '../../../services/workoutHistoryService';
 import { WorkoutExerciseItem } from '../../../components/WorkoutExerciseItem';
 import {
     Container,
@@ -85,8 +87,36 @@ export const WorkoutSession = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const workoutId = location.state?.workoutId || 'treino-a';
+    const studentId = location.state?.studentId || '1';
+
+    // Resolve workout from mock data OR from saved student workouts
+    const resolveWorkout = (): WorkoutData => {
+        const mock = getWorkout(workoutId);
+        if (mock) return mock;
+
+        const saved = getWorkoutById(workoutId);
+        if (saved) {
+            return {
+                name: saved.name,
+                type: saved.type,
+                exercises: saved.exercises.map(ex => ({
+                    id: ex.id,
+                    name: ex.name,
+                    series: ex.series,
+                    reps: ex.reps,
+                    weight: ex.weight,
+                    rest: ex.rest,
+                    notes: ex.notes,
+                    completed: false,
+                })),
+            };
+        }
+
+        // Fallback to avoid crash
+        return { name: 'Treino', type: 'Geral', exercises: [] };
+    };
     
-    const [workout, setWorkout] = useState<WorkoutData>(getWorkout(workoutId)!);
+    const [workout, setWorkout] = useState<WorkoutData>(resolveWorkout);
     const [isRunning, setIsRunning] = useState(false);
     const [elapsedTime, setElapsedTime] = useState(0);
     const [showCelebration, setShowCelebration] = useState(false);
@@ -179,12 +209,43 @@ export const WorkoutSession = () => {
 
     const handleFinishWorkout = () => {
         setIsRunning(false);
+        // Reset any active timers to avoid modal overlap
+        setIsResting(false);
+        setRestTimeLeft(0);
+        setRestExercise(null);
+        setRestPaused(false);
+        setIsExecutionTiming(false);
+        setExecutionTimeLeft(0);
+        setExecutionExercise(null);
+        setExecutionPaused(false);
+
+        // Save completed session to history
+        const completedExercises = workout.exercises.filter(ex => ex.completed).length;
+        addCompletedSession({
+            studentId,
+            workoutId,
+            workoutName: workout.name,
+            workoutType: workout.type,
+            date: new Date().toISOString().split('T')[0],
+            durationSeconds: elapsedTime,
+            durationMinutes: Math.round(elapsedTime / 60),
+            caloriesBurned: Math.round(elapsedTime * 8.5),
+            exercisesCompleted: completedExercises,
+            exercisesTotal: totalCount,
+            source: 'personal',
+        });
+
         setShowCelebration(true);
     };
 
     const handleCloseCelebration = () => {
         setShowCelebration(false);
-        navigate(-1);
+        // Use replace to avoid broken back-navigation; fallback to home
+        if (window.history.length > 1) {
+            navigate(-1);
+        } else {
+            navigate('/', { replace: true });
+        }
     };
 
     const formatRestTime = (seconds: number): string => {
@@ -275,7 +336,7 @@ export const WorkoutSession = () => {
     return (
         <Container>
             <Header>
-                <IconButton onClick={() => navigate(-1)} aria-label="Voltar">
+                <IconButton onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/', { replace: true })} aria-label="Voltar">
                     <ChevronLeftIcon />
                 </IconButton>
                 <HeaderTitle>
@@ -340,6 +401,7 @@ export const WorkoutSession = () => {
                 </FinishButton>
             </FloatingActions>
 
+            {isResting && (
             <RestTimerModal $show={isResting}>
                 <RestTimerContent>
                     <RestTimerLabel>Descanso</RestTimerLabel>
@@ -370,7 +432,9 @@ export const WorkoutSession = () => {
                     </RestTimerActions>
                 </RestTimerContent>
             </RestTimerModal>
+            )}
 
+            {isExecutionTiming && (
             <ExecutionTimerModal $show={isExecutionTiming}>
                 <ExecutionTimerContent>
                     <ExecutionTimerLabel>Execução</ExecutionTimerLabel>
@@ -401,7 +465,9 @@ export const WorkoutSession = () => {
                     </ExecutionTimerActions>
                 </ExecutionTimerContent>
             </ExecutionTimerModal>
+            )}
 
+            {showCelebration && (
             <CelebrationModal $show={showCelebration}>
                 <CelebrationContent>
                     <CelebrationIcon>🔥💪</CelebrationIcon>
@@ -431,6 +497,7 @@ export const WorkoutSession = () => {
                     </CelebrationButton>
                 </CelebrationContent>
             </CelebrationModal>
+            )}
         </Container>
     );
 };

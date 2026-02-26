@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { theme } from '../../../styles/theme';
 
 export const Container = styled.div`
-    min-height: 100vh;
+    min-height: 100dvh;
     background-color: ${theme.colors.backgroundDark};
     padding-bottom: 6rem;
     
@@ -11,6 +11,14 @@ export const Container = styled.div`
     margin: 0 auto;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     position: relative;
+
+    @supports not (min-height: 100dvh) {
+        min-height: 100vh;
+    }
+
+    @media (max-width: ${theme.screens.xs}) {
+        padding-bottom: 5rem;
+    }
 `;
 
 export const Header = styled.header`

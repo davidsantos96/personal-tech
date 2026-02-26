@@ -1,6 +1,16 @@
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getStudentById } from '../../../data/students';
+import {
+    getCompletedSessions,
+    removeCompletedSession,
+    subscribeHistory,
+} from '../../../services/workoutHistoryService';
+import {
+    getStudentWorkouts,
+    removeStudentWorkout,
+    subscribeWorkouts,
+} from '../../../services/studentWorkoutService';
 import {
     Container,
     Header,
@@ -22,6 +32,13 @@ import {
     StatLabel,
     StatValue,
     StatTrend,
+    WorkoutCardList,
+    WorkoutCard,
+    WorkoutCardIcon,
+    WorkoutCardContent,
+    WorkoutCardTitle,
+    WorkoutCardSubtitle,
+    WorkoutStatusBadge,
     HistoryList,
     HistoryItem,
     HistoryIconBox,
@@ -123,11 +140,45 @@ export const StudentProfile = () => {
     const student = id ? getStudentById(id) : undefined;
     const [menuOpen, setMenuOpen] = useState(false);
 
+    // Reactive workout history — re-renders when sessions change
+    const sessions = useSyncExternalStore(
+        subscribeHistory,
+        () => getCompletedSessions(id),
+    );
+
+    // Reactive saved workouts — re-renders when workouts change
+    const workouts = useSyncExternalStore(
+        subscribeWorkouts,
+        () => getStudentWorkouts(id),
+    );
+
+    // Status label map
+    const statusLabels: Record<string, string> = {
+        active: 'Ativo',
+        expiring: 'Vencendo',
+        expired: 'Vencido',
+    };
+
     // Fallback data if student not found (for backwards compatibility)
     const studentName = student?.name || 'João Victor Silva';
     const studentAvatar = student?.avatar || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80';
     const studentGoal = student?.goal?.toUpperCase() || 'HIPERTROFIA';
     const studentStatus = student?.isActive ? `• Ativo` : '• Inativo';
+
+    const formatSessionDate = (dateStr: string) => {
+        const sessionDate = new Date(dateStr + 'T12:00:00');
+        const today = new Date();
+        today.setHours(12, 0, 0, 0);
+        const diffDays = Math.round((today.getTime() - sessionDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) return 'Hoje';
+        if (diffDays === 1) return 'Ontem';
+        if (diffDays < 7) {
+            const weekdays = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+            return weekdays[sessionDate.getDay()];
+        }
+        return sessionDate.toLocaleDateString('pt-BR');
+    };
 
     return (
         <Container>
@@ -192,84 +243,104 @@ export const StudentProfile = () => {
             </StatsGrid>
 
             <SectionTitle>
+                TREINOS ATIVOS
+                {workouts.length > 0 && <ViewAllLink>Ver todos</ViewAllLink>}
+            </SectionTitle>
+            <WorkoutCardList>
+                {workouts.length === 0 ? (
+                    <WorkoutCard style={{ cursor: 'default' }}>
+                        <WorkoutCardContent style={{ textAlign: 'center' }}>
+                            <WorkoutCardTitle>Nenhum treino criado</WorkoutCardTitle>
+                            <WorkoutCardSubtitle>Crie um treino para este aluno</WorkoutCardSubtitle>
+                        </WorkoutCardContent>
+                    </WorkoutCard>
+                ) : (
+                    workouts.map((w) => {
+                        const isCardio = w.type.toLowerCase().includes('cardio');
+                        return (
+                            <WorkoutCard
+                                key={w.id}
+                                onClick={() => navigate('/treino-sessao', { state: { workoutId: w.id, studentId: id } })}
+                            >
+                                <WorkoutCardIcon $status={w.status}>
+                                    {isCardio ? <RunIcon /> : <DumbbellIcon />}
+                                </WorkoutCardIcon>
+                                <WorkoutCardContent>
+                                    <WorkoutCardTitle>{w.name}</WorkoutCardTitle>
+                                    <WorkoutCardSubtitle>
+                                        {w.type} • {w.exercises.length} exercícios • ~{w.estimatedMinutes}min
+                                    </WorkoutCardSubtitle>
+                                </WorkoutCardContent>
+                                <WorkoutStatusBadge $status={w.status}>
+                                    {statusLabels[w.status] || w.status}
+                                </WorkoutStatusBadge>
+                                <WorkoutActions>
+                                    <WorkoutActionButton
+                                        $danger
+                                        title="Remover treino"
+                                        onClick={(e) => { e.stopPropagation(); removeStudentWorkout(w.id); }}
+                                    >
+                                        <TrashIcon />
+                                    </WorkoutActionButton>
+                                </WorkoutActions>
+                            </WorkoutCard>
+                        );
+                    })
+                )}
+            </WorkoutCardList>
+
+            <SectionTitle>
                 HISTÓRICO DE TREINOS
-                <ViewAllLink>Ver todos</ViewAllLink>
+                {sessions.length > 0 && <ViewAllLink>Ver todos</ViewAllLink>}
             </SectionTitle>
             <HistoryList>
-                <HistoryItem onClick={() => navigate('/treino-sessao', { state: { workoutId: 'treino-a' } })}>
-                    <HistoryIconBox>
-                        <DumbbellIcon />
-                    </HistoryIconBox>
-                    <HistoryContent>
-                        <HistoryTitle>Treino A - Superiores</HistoryTitle>
-                        <HistorySubtitle>Ontem • 52 min • 420 kcal</HistorySubtitle>
-                    </HistoryContent>
-                    <WorkoutActions>
-                        <WorkoutActionButton
-                            title="Editar treino"
-                            onClick={(e) => { e.stopPropagation(); navigate('/treino-sessao', { state: { workoutId: 'treino-a' } }); }}
-                        >
-                            <EditSmallIcon />
-                        </WorkoutActionButton>
-                        <WorkoutActionButton
-                            $danger
-                            title="Remover treino"
-                            onClick={(e) => { e.stopPropagation(); /* TODO: Remover treino */ }}
-                        >
-                            <TrashIcon />
-                        </WorkoutActionButton>
-                    </WorkoutActions>
-                </HistoryItem>
+                {sessions.length === 0 ? (
+                    <HistoryItem style={{ justifyContent: 'center', cursor: 'default' }}>
+                        <HistoryContent style={{ textAlign: 'center' }}>
+                            <HistoryTitle>Nenhum treino concluído</HistoryTitle>
+                            <HistorySubtitle>Os treinos finalizados aparecerão aqui</HistorySubtitle>
+                        </HistoryContent>
+                    </HistoryItem>
+                ) : (
+                    sessions.slice(0, 5).map((session) => {
+                        const isCardio = session.workoutType.toLowerCase().includes('cardio');
+                        const dateLabel = formatSessionDate(session.date);
+                        const sourceLabel = session.source === 'student' ? ' • 👤 Aluno' : ' • 🏋️ Personal';
 
-                <HistoryItem>
-                    <HistoryIconBox>
-                        <RunIcon />
-                    </HistoryIconBox>
-                    <HistoryContent>
-                        <HistoryTitle>Cardio - HIIT</HistoryTitle>
-                        <HistorySubtitle>Terça-feira • 30 min • 310 kcal</HistorySubtitle>
-                    </HistoryContent>
-                    <WorkoutActions>
-                        <WorkoutActionButton
-                            title="Editar treino"
-                            onClick={(e) => { e.stopPropagation(); navigate('/treino-sessao', { state: { workoutId: 'cardio-hiit' } }); }}
-                        >
-                            <EditSmallIcon />
-                        </WorkoutActionButton>
-                        <WorkoutActionButton
-                            $danger
-                            title="Remover treino"
-                            onClick={(e) => { e.stopPropagation(); /* TODO: Remover treino */ }}
-                        >
-                            <TrashIcon />
-                        </WorkoutActionButton>
-                    </WorkoutActions>
-                </HistoryItem>
-
-                <HistoryItem onClick={() => navigate('/treino-sessao', { state: { workoutId: 'treino-b' } })}>
-                    <HistoryIconBox>
-                        <DumbbellIcon />
-                    </HistoryIconBox>
-                    <HistoryContent>
-                        <HistoryTitle>Treino B - Inferiores</HistoryTitle>
-                        <HistorySubtitle>Segunda-feira • 65 min • 550 kcal</HistorySubtitle>
-                    </HistoryContent>
-                    <WorkoutActions>
-                        <WorkoutActionButton
-                            title="Editar treino"
-                            onClick={(e) => { e.stopPropagation(); navigate('/treino-sessao', { state: { workoutId: 'treino-b' } }); }}
-                        >
-                            <EditSmallIcon />
-                        </WorkoutActionButton>
-                        <WorkoutActionButton
-                            $danger
-                            title="Remover treino"
-                            onClick={(e) => { e.stopPropagation(); /* TODO: Remover treino */ }}
-                        >
-                            <TrashIcon />
-                        </WorkoutActionButton>
-                    </WorkoutActions>
-                </HistoryItem>
+                        return (
+                            <HistoryItem
+                                key={session.id}
+                                onClick={() => navigate('/treino-sessao', { state: { workoutId: session.workoutId, studentId: id } })}
+                            >
+                                <HistoryIconBox>
+                                    {isCardio ? <RunIcon /> : <DumbbellIcon />}
+                                </HistoryIconBox>
+                                <HistoryContent>
+                                    <HistoryTitle>{session.workoutName} - {session.workoutType}</HistoryTitle>
+                                    <HistorySubtitle>
+                                        {dateLabel} • {session.durationMinutes} min • {session.caloriesBurned} kcal
+                                        {sourceLabel}
+                                    </HistorySubtitle>
+                                </HistoryContent>
+                                <WorkoutActions>
+                                    <WorkoutActionButton
+                                        title="Repetir treino"
+                                        onClick={(e) => { e.stopPropagation(); navigate('/treino-sessao', { state: { workoutId: session.workoutId, studentId: id } }); }}
+                                    >
+                                        <EditSmallIcon />
+                                    </WorkoutActionButton>
+                                    <WorkoutActionButton
+                                        $danger
+                                        title="Remover do histórico"
+                                        onClick={(e) => { e.stopPropagation(); removeCompletedSession(session.id); }}
+                                    >
+                                        <TrashIcon />
+                                    </WorkoutActionButton>
+                                </WorkoutActions>
+                            </HistoryItem>
+                        );
+                    })
+                )}
             </HistoryList>
 
             <GoalCard>
@@ -283,7 +354,7 @@ export const StudentProfile = () => {
             </GoalCard>
 
             <BottomActions>
-                <PrimaryButton onClick={() => navigate('/montar-treino')}>
+                <PrimaryButton onClick={() => navigate('/montar-treino', { state: { studentId: id } })}>
                     <PlayIcon />
                     Criar Novo Treino
                 </PrimaryButton>

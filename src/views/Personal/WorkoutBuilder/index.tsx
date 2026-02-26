@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { BuilderExerciseItem, type BuilderExercise } from '../../../components/BuilderExerciseItem';
+import { studentsData } from '../../../data/students';
+import { addStudentWorkout } from '../../../services/studentWorkoutService';
 import {
     Container,
     Header,
@@ -16,7 +18,10 @@ import {
     ExerciseCount,
     ExercisesList,
     AddExerciseButton,
-    SaveButton
+    SaveButton,
+    ValidationError,
+    SuccessToast,
+    Spinner,
 } from '../WorkoutBuilder/styles';
 
 // Icons
@@ -32,39 +37,38 @@ const PlusIcon = () => (
     </svg>
 );
 
+// State shape passed/received via location.state
+interface WorkoutBuilderState {
+    studentId?: string;
+    workoutName?: string;
+    workoutType?: string;
+    selectedStudent?: string;
+    exercises?: BuilderExercise[];
+    addedExercises?: BuilderExercise[];
+}
+
 export const WorkoutBuilder = () => {
     const navigate = useNavigate();
-    const [workoutName, setWorkoutName] = useState('');
-    const [selectedStudent, setSelectedStudent] = useState('');
-    const [exercises, setExercises] = useState<BuilderExercise[]>([
-        {
-            id: 1,
-            name: 'Supino Reto',
-            muscleGroup: 'Peitoral',
-            series: '4',
-            reps: '8-10',
-            weight: '30',
-            rest: '90'
-        },
-        {
-            id: 2,
-            name: 'Crucifixo Inclinado',
-            muscleGroup: 'Peitoral',
-            series: '3',
-            reps: '12',
-            weight: '14',
-            rest: '60'
-        },
-        {
-            id: 3,
-            name: 'Tríceps Corda',
-            muscleGroup: 'Tríceps',
-            series: '4',
-            reps: '15',
-            weight: '25',
-            rest: '45'
-        }
-    ]);
+    const location = useLocation();
+    const navState = (location.state as WorkoutBuilderState | null) ?? {};
+
+    // Merge returning exercises (from ExerciseLibrary) with previously existing ones
+    const initialExercises: BuilderExercise[] = [
+        ...(navState.exercises ?? []),
+        ...(navState.addedExercises ?? []),
+    ];
+
+    const [workoutName, setWorkoutName] = useState(navState.workoutName ?? '');
+    const [workoutType, setWorkoutType] = useState(navState.workoutType ?? 'Superiores');
+    const [selectedStudent, setSelectedStudent] = useState(navState.selectedStudent ?? navState.studentId ?? '');
+    const [exercises, setExercises] = useState<BuilderExercise[]>(initialExercises);
+
+    // Validation & save state
+    const [errors, setErrors] = useState<{ name?: string; student?: string; exercises?: string }>({});
+    const [isSaving, setIsSaving] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+
+    const isFormValid = workoutName.trim() !== '' && selectedStudent !== '' && exercises.length > 0;
 
     // Formata o tempo de descanso (segundos para minutos se > 60)
     const formatRestTime = (seconds: string): string => {
@@ -94,18 +98,83 @@ export const WorkoutBuilder = () => {
     };
 
     const handleAddExercise = () => {
-        // Navega para a biblioteca de exercícios
-        navigate('/biblioteca-exercicios');
+        // Navigate to exercise library, preserving current form state so we can restore it on return
+        navigate('/biblioteca-exercicios', {
+            state: {
+                returnTo: 'montar-treino',
+                workoutName,
+                workoutType,
+                selectedStudent,
+                exercises,
+            },
+        });
     };
 
-    const handleSave = () => {
-        // Placeholder for save logic
-        console.log('Saving workout:', { workoutName, selectedStudent, exercises });
-        navigate(-1);
+    const validate = (): boolean => {
+        const newErrors: typeof errors = {};
+        if (!workoutName.trim()) newErrors.name = 'Informe o nome do treino';
+        if (!selectedStudent) newErrors.student = 'Selecione um aluno';
+        if (exercises.length === 0) newErrors.exercises = 'Adicione ao menos um exercício';
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    /**
+     * handleSave — async-ready for future Supabase integration.
+     * Replace the body with `await supabase.from('workouts').insert(...)` later.
+     */
+    const handleSave = async () => {
+        if (!validate()) return;
+
+        setIsSaving(true);
+        try {
+            // Estimate workout duration: ~3 min per exercise
+            const estimatedMinutes = exercises.length * 3 + 10;
+
+            // Compute valid until (30 days from today)
+            const validDate = new Date();
+            validDate.setDate(validDate.getDate() + 30);
+            const validUntil = validDate.toISOString().split('T')[0];
+
+            // TODO: Replace with Supabase call
+            // const { data, error } = await supabase.from('workouts').insert({...});
+            addStudentWorkout({
+                studentId: selectedStudent,
+                name: workoutName,
+                type: workoutType,
+                status: 'active',
+                validUntil,
+                estimatedMinutes,
+                exercises: exercises.map((ex) => ({
+                    id: ex.id,
+                    name: ex.name,
+                    muscleGroup: ex.muscleGroup,
+                    series: parseInt(ex.series) || 0,
+                    reps: ex.reps,
+                    weight: ex.weight ? `${ex.weight}kg` : '-',
+                    rest: parseInt(ex.rest) || 60,
+                    completed: false,
+                })),
+            });
+
+            // Show success feedback before navigating
+            setShowSuccess(true);
+            setTimeout(() => {
+                setShowSuccess(false);
+                navigate(`/perfil-aluno/${selectedStudent}`);
+            }, 1200);
+        } catch (err) {
+            console.error('Erro ao salvar treino:', err);
+            setErrors({ name: 'Erro ao salvar. Tente novamente.' });
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
         <Container>
+            <SuccessToast $visible={showSuccess}>✅ Treino salvo com sucesso!</SuccessToast>
+
             <Header>
                 <IconButton onClick={() => navigate(-1)} aria-label="Voltar">
                     <ChevronLeftIcon />
@@ -118,20 +187,42 @@ export const WorkoutBuilder = () => {
                 <Label>Nome do Treino</Label>
                 <Input 
                     type="text" 
-                    placeholder="Treino A - Hipertrofia"
+                    placeholder="Ex: Treino A - Hipertrofia"
                     value={workoutName}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setWorkoutName(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        setWorkoutName(e.target.value);
+                        if (errors.name) setErrors(prev => ({ ...prev, name: undefined }));
+                    }}
                 />
+                {errors.name && <ValidationError>{errors.name}</ValidationError>}
+
+                <Label>Tipo do Treino</Label>
+                <Select
+                    value={workoutType}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setWorkoutType(e.target.value)}
+                >
+                    <option value="Superiores">Superiores</option>
+                    <option value="Inferiores">Inferiores</option>
+                    <option value="Full Body">Full Body</option>
+                    <option value="Cardio">Cardio</option>
+                    <option value="Funcional">Funcional</option>
+                    <option value="Core">Core</option>
+                </Select>
 
                 <Label>Aluno</Label>
                 <Select 
                     value={selectedStudent}
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedStudent(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                        setSelectedStudent(e.target.value);
+                        if (errors.student) setErrors(prev => ({ ...prev, student: undefined }));
+                    }}
                 >
-                    <option value="">Carlos Silva</option>
-                    <option value="maria">Maria Santos</option>
-                    <option value="joao">João Pedro</option>
+                    <option value="">Selecione um aluno</option>
+                    {studentsData.map(s => (
+                        <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
                 </Select>
+                {errors.student && <ValidationError>{errors.student}</ValidationError>}
             </FormSection>
 
             <ExercisesSection>
@@ -157,10 +248,11 @@ export const WorkoutBuilder = () => {
                     <PlusIcon />
                     Adicionar Exercício
                 </AddExerciseButton>
+                {errors.exercises && <ValidationError>{errors.exercises}</ValidationError>}
             </ExercisesSection>
 
-            <SaveButton onClick={handleSave}>
-                Salvar Treino
+            <SaveButton onClick={handleSave} disabled={isSaving || !isFormValid}>
+                {isSaving ? <><Spinner /> Salvando...</> : 'Salvar Treino'}
             </SaveButton>
         </Container>
     );
