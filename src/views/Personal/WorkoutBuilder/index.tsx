@@ -145,8 +145,8 @@ export const WorkoutBuilder = () => {
                 status: 'active',
                 validUntil,
                 estimatedMinutes,
-                exercises: exercises.map((ex) => ({
-                    id: ex.id,
+                exercises: exercises.map((ex, idx) => ({
+                    id: idx + 1,
                     name: ex.name,
                     muscleGroup: ex.muscleGroup,
                     series: parseInt(ex.series) || 0,

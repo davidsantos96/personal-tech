@@ -38,7 +38,7 @@ export const ExerciseItem = ({ exercise, onAdd }: ExerciseItemProps) => {
                 onClick={() => exercise.gif_url && setDemoData({
                     name: exercise.name,
                     gifUrl: exercise.gif_url,
-                    muscleGroup: exercise.muscle_group || exercise.category,
+                    muscleGroup: exercise.muscle_group ?? exercise.category ?? undefined,
                 })}
                 style={{ cursor: exercise.gif_url ? 'pointer' : 'default' }}
             >

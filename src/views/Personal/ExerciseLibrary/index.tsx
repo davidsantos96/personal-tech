@@ -52,19 +52,15 @@ export const ExerciseLibrary = () => {
     const [selectedCategory, setSelectedCategory] = useState('Todos');
     const [selectedExercises, setSelectedExercises] = useState<SelectedExercise[]>([]);
     const [exercises, setExercises] = useState<Exercise[]>(getExercises());
-    const [loading, setLoading] = useState(false);
 
     // Debounced search via Supabase
     const fetchExercises = useCallback(async (query: string, category: string) => {
-        setLoading(true);
         try {
             const bodyPart = category !== 'Todos' ? category : undefined;
             const results = await searchExercises(query || undefined, bodyPart, 40);
             setExercises(results);
         } catch {
             // keep current list on error
-        } finally {
-            setLoading(false);
         }
     }, []);
 

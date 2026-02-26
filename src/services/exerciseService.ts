@@ -13,11 +13,11 @@ const fallbackExercises: Exercise[] = [
     { id: '3', name: 'Puxada Alta Frontal', muscle_group: 'Dorsais, Biceps', category: 'Costas', equipment: 'Cabo', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
     { id: '4', name: 'Elevacao Lateral', muscle_group: 'Deltoide Lateral', category: 'Ombros', equipment: 'Halteres', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
     { id: '5', name: 'Leg Press 45', muscle_group: 'Quadriceps', category: 'Pernas', equipment: 'Maquina', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
-    { id: '6', name: 'Rosca Direta', muscle_group: 'Biceps', category: 'Bracos', equipment: 'Barra', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
+    { id: '6', name: 'Rosca Direta', muscle_group: 'Biceps', category: 'Braços', equipment: 'Barra', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
     { id: '7', name: 'Desenvolvimento com Halteres', muscle_group: 'Deltoide Anterior', category: 'Ombros', equipment: 'Halteres', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
     { id: '8', name: 'Crucifixo Inclinado', muscle_group: 'Peitoral Superior', category: 'Peito', equipment: 'Halteres', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
     { id: '9', name: 'Remada Curvada', muscle_group: 'Dorsais, Trapezio', category: 'Costas', equipment: 'Barra', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
-    { id: '10', name: 'Extensao de Triceps', muscle_group: 'Triceps', category: 'Bracos', equipment: 'Cabo', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
+    { id: '10', name: 'Extensao de Triceps', muscle_group: 'Triceps', category: 'Braços', equipment: 'Cabo', gif_url: null, instructions: null, external_id: null, is_custom: false, created_by: null, created_at: '' },
 ];
 
 /**
