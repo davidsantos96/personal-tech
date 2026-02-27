@@ -1,5 +1,3 @@
-export type StepState = 'done' | 'active' | 'pending';
-
 export const STEPS = ['PAR-Q', 'Histórico', 'Hábitos', 'Objetivos', 'Revisão'];
 
 export const PARQ_QUESTIONS = [

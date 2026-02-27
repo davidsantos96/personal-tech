@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../hooks/useNotifications';
+import { SafeDescription } from '../../utils/safeHtml';
 import type { AppNotification, NotificationPriority } from '../../data/notifications';
 import {
     Backdrop,
@@ -118,10 +119,9 @@ export const NotificationDrawer = ({ onClose }: Props) => {
                                         </IconBox>
                                         <NotifContent>
                                             <NotifTitle>{n.title}</NotifTitle>
-                                            <NotifDesc
-                                                $color={n.color.textMuted}
-                                                dangerouslySetInnerHTML={{ __html: n.description }}
-                                            />
+                                            <NotifDesc $color={n.color.textMuted}>
+                                                <SafeDescription text={n.description} />
+                                            </NotifDesc>
                                         </NotifContent>
                                         <DismissButton
                                             onClick={e => dismiss(e, n.id)}

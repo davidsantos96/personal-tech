@@ -1,2 +1,2 @@
-export type { Student, ScheduleEntry } from '../data/students';
-export { studentsData, todaySchedule, getStudentById, getActiveStudents } from '../data/students';
+export type { Student } from '../data/students';
+export { studentsData } from '../data/students';

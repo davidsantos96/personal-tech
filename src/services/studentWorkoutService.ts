@@ -4,7 +4,7 @@
  * Persists to localStorage with reactive subscriptions (useSyncExternalStore-safe).
  */
 
-export interface SavedWorkoutExercise {
+interface SavedWorkoutExercise {
     id: number;
     name: string;
     muscleGroup: string;
@@ -17,7 +17,7 @@ export interface SavedWorkoutExercise {
     gifUrl?: string;
 }
 
-export interface SavedWorkout {
+interface SavedWorkout {
     id: string;
     studentId: string;
     name: string;
@@ -107,16 +107,4 @@ export function removeStudentWorkout(id: string): void {
     _persist(all.filter(w => w.id !== id));
 }
 
-/** Update only the status of a workout. */
-export function updateWorkoutStatus(
-    id: string,
-    status: SavedWorkout['status'],
-): void {
-    const all = _load();
-    _persist(all.map(w => (w.id === id ? { ...w, status } : w)));
-}
 
-/** Clear all workouts (dev/testing). */
-export function clearWorkouts(): void {
-    _persist([]);
-}

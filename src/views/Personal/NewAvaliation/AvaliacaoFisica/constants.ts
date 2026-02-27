@@ -5,7 +5,7 @@ export interface Dobra {
     hint: string;
 }
 
-export interface Circunf {
+interface Circunf {
     key: string;
     label: string;
     emoji: string;

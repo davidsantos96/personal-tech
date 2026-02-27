@@ -1,10 +1,10 @@
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
 import type { Exercise as DBExercise } from '../lib/database.types';
 
 // Re-export the DB type with a friendlier alias
 export type Exercise = DBExercise;
 
-export const categories = ['Todos', 'Peito', 'Costas', 'Pernas', 'Ombros', 'Bracos', 'Core', 'Cardio'] as const;
+const categories = ['Todos', 'Peito', 'Costas', 'Pernas', 'Ombros', 'Bracos', 'Core', 'Cardio'] as const;
 
 // ── Fallback (offline / mock) data ───────────────────────────
 const fallbackExercises: Exercise[] = [
@@ -34,6 +34,7 @@ export async function searchExercises(
     if (!isSupabaseConfigured) return fallbackExercises;
 
     try {
+        const supabase = await getSupabase();
         const { data, error } = await supabase.functions.invoke('exercise-search', {
             body: { query, bodyPart, limit },
         });
@@ -56,6 +57,7 @@ async function queryExercisesTable(
     limit = 20,
 ): Promise<Exercise[]> {
     try {
+        const supabase = await getSupabase();
         let q = supabase.from('exercises').select('*').limit(limit);
         if (query) q = q.ilike('name', `%${query}%`);
         if (category && category !== 'Todos') q = q.eq('category', category);
@@ -72,21 +74,7 @@ export function getCategories(): string[] {
     return [...categories];
 }
 
-/** Get a single exercise by UUID. */
-export async function getExerciseById(id: string): Promise<Exercise | undefined> {
-    if (!isSupabaseConfigured) return fallbackExercises.find(e => e.id === id);
-    try {
-        const { data, error } = await supabase
-            .from('exercises')
-            .select('*')
-            .eq('id', id)
-            .single();
-        if (error) throw error;
-        return data as Exercise;
-    } catch {
-        return fallbackExercises.find(e => e.id === id);
-    }
-}
+
 
 /**
  * Synchronous fallback — returns offline mock data.

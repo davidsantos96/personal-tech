@@ -54,7 +54,7 @@ export const StepParq = ({ parq, onParqChange, consent, onConsentToggle, onNext 
 
             {PARQ_QUESTIONS.map((q, i) => (
                 <YesNo
-                    key={i}
+                    key={`parq-${q.slice(0, 20)}`}
                     label={q}
                     val={parq[i]}
                     onChange={v => onParqChange(i, v)}

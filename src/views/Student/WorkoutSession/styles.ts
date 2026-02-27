@@ -284,17 +284,6 @@ export const ExerciseNotes = styled.p`
     border-radius: 6px;
 `;
 
-export const GifContainer = styled.div`
-    margin-top: 1rem;
-    border-radius: 12px;
-    overflow: hidden;
-    background: #fff;
-    img {
-        width: 100%;
-        display: block;
-    }
-`;
-
 export const FloatingActions = styled.div`
     position: fixed;
     bottom: 0;

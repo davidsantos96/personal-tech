@@ -1,6 +1,6 @@
 
 // ── Student Profile ──────────────────────────────────────────────
-export interface StudentPortalProfile {
+interface StudentPortalProfile {
     id: string;
     name: string;
     avatar: string;
@@ -35,7 +35,7 @@ export const studentProfile: StudentPortalProfile = {
 };
 
 // ── Body Assessments (Evolução) ──────────────────────────────────
-export interface BodyAssessment {
+interface BodyAssessment {
     id: string;
     date: string; // ISO date
     weightKg: number;
@@ -88,7 +88,7 @@ export const bodyAssessments: BodyAssessment[] = [
 ];
 
 // ── Workout Session History ──────────────────────────────────────
-export interface WorkoutSessionHistory {
+interface WorkoutSessionHistory {
     id: string;
     workoutName: string;
     workoutType: string;

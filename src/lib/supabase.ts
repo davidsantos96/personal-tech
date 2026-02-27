@@ -1,8 +1,8 @@
 /**
  * Supabase Client — Personal Tech
  *
- * Centralised Supabase client instance used across the entire app.
- * Reads credentials from environment variables (Vite convention).
+ * Lazy-loaded Supabase client to keep the initial bundle small (~477 KB saved).
+ * The client is only instantiated on first use via getSupabase().
  *
  * Setup:
  *   1. Copy `.env.example` → `.env`
@@ -10,7 +10,7 @@
  *   3. Restart Vite dev server
  */
 
-import { createClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from './database.types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
@@ -24,17 +24,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
     );
 }
 
-export const supabase = createClient<Database>(
-    supabaseUrl || 'https://placeholder.supabase.co',
-    supabaseAnonKey || 'placeholder-key',
-    {
-        auth: {
-            persistSession: true,
-            autoRefreshToken: true,
-        },
-    },
-);
-
 /**
  * Convenience helper — true when Supabase credentials are properly set.
  * Use this to gate real API calls vs mock/fallback data.
@@ -43,3 +32,25 @@ export const isSupabaseConfigured =
     !!supabaseUrl &&
     !!supabaseAnonKey &&
     !supabaseUrl.includes('placeholder');
+
+let _client: SupabaseClient<Database> | null = null;
+
+/**
+ * Lazily creates and returns the Supabase client.
+ * The heavy @supabase/supabase-js bundle is only downloaded on first call.
+ */
+export async function getSupabase(): Promise<SupabaseClient<Database>> {
+    if (_client) return _client;
+    const { createClient } = await import('@supabase/supabase-js');
+    _client = createClient<Database>(
+        supabaseUrl || 'https://placeholder.supabase.co',
+        supabaseAnonKey || 'placeholder-key',
+        {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+            },
+        },
+    );
+    return _client;
+}

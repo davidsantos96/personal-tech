@@ -281,31 +281,6 @@ export const StatLabel = styled.span`
     }
 `;
 
-export const StatValue = styled.span`
-    font-size: 1rem;
-    font-weight: 600;
-    color: ${theme.colors.text.white};
-    white-space: nowrap;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.125rem;
-
-    @media (max-width: ${theme.screens.xs}) {
-        font-size: 0.875rem;
-    }
-
-    span {
-        font-size: 0.75rem;
-        font-weight: 400;
-        color: ${theme.colors.text.slate400};
-        margin-left: 0.125rem;
-
-        @media (max-width: ${theme.screens.xs}) {
-            font-size: 0.625rem;
-        }
-    }
-`;
-
 export const StatInput = styled.input`
     font-size: 0.875rem;
     font-weight: 600;

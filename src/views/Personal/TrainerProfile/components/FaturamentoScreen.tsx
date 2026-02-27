@@ -84,7 +84,7 @@ export const FaturamentoScreen = ({ onBack }: FaturamentoScreenProps) => {
 
                         <MiniChart>
                             {BARS.map((h, i) => (
-                                <MiniBar key={i} $highlight={i === 6} style={{ height: `${(h / 72) * 100}%` }} />
+                                <MiniBar key={DIAS[i]} $highlight={i === 6} style={{ height: `${(h / 72) * 100}%` }} />
                             ))}
                         </MiniChart>
 

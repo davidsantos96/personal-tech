@@ -4,7 +4,7 @@
  * Persists to localStorage so data survives page refreshes.
  */
 
-export interface CompletedSession {
+interface CompletedSession {
     id: string;
     studentId: string;
     workoutId: string;
@@ -90,7 +90,4 @@ export function removeCompletedSession(id: string): void {
     _persist(all.filter(s => s.id !== id));
 }
 
-/** Clear all sessions (useful for dev/testing) */
-export function clearHistory(): void {
-    _persist([]);
-}
+

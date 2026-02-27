@@ -48,13 +48,6 @@ export const StatusIndicator = styled.div`
 
 export const UserInfo = styled.div``;
 
-export const BrandRow = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.25rem;
-`;
-
 export const RightActions = styled.div`
     display: flex;
     align-items: center;
@@ -91,16 +84,6 @@ export const NotificationButton = styled.button`
     &:hover {
         background-color: ${theme.colors.surfaceDark};
     }
-`;
-
-export const NotificationDot = styled.span`
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    width: 0.5rem; /* size-2 */
-    height: 0.5rem;
-    background-color: ${theme.colors.primary};
-    border-radius: 9999px;
 `;
 
 export const NotificationBadge = styled.span<{ $critical: boolean }>`

@@ -491,18 +491,6 @@ export const DemoButton = styled.button`
     }
 `;
 
-export const GifContainer = styled.div`
-    margin-top: 0.75rem;
-    border-radius: 12px;
-    overflow: hidden;
-    background: #fff;
-
-    img {
-        width: 100%;
-        display: block;
-    }
-`;
-
 export const RestTimerModal = styled.div<{ $show?: boolean }>`
     position: fixed;
     inset: 0;

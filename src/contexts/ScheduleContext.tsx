@@ -2,12 +2,12 @@ import { createContext, useContext, useState, useCallback, type ReactNode } from
 import { todaySchedule, getStudentById, type ScheduleEntry, type Student } from '../data/students';
 
 // Enriched schedule entry for Dashboard usage
-export interface EnrichedScheduleEntry extends ScheduleEntry {
+interface EnrichedScheduleEntry extends ScheduleEntry {
     student?: Student;
 }
 
 // Agenda item for display/drag-and-drop
-export interface AgendaDisplayItem {
+interface AgendaDisplayItem {
     id: string;
     type: 'filled' | 'free';
     time: string;

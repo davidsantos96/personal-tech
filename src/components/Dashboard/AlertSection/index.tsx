@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../../hooks/useNotifications';
+import { SafeDescription } from '../../../utils/safeHtml';
 import { ActionButton, AlertCard, AlertContent, AlertDescription, AlertIconBox, AlertList, AlertTitle, AlertsSection, Title } from './styles';
 
 export const AlertSection = () => {
@@ -24,10 +25,9 @@ export const AlertSection = () => {
                         </AlertIconBox>
                         <AlertContent>
                             <AlertTitle>{n.title}</AlertTitle>
-                            <AlertDescription
-                                $color={n.color.textMuted}
-                                dangerouslySetInnerHTML={{ __html: n.description }}
-                            />
+                            <AlertDescription $color={n.color.textMuted}>
+                                <SafeDescription text={n.description} />
+                            </AlertDescription>
                         </AlertContent>
                         <ActionButton
                             $bgColor={`${n.color.accent}1a`}

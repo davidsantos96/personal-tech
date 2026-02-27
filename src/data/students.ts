@@ -177,10 +177,4 @@ export const getActiveStudents = (): Student[] => {
     return studentsData.filter(s => s.isActive);
 };
 
-// Get today's schedule with student data enriched
-export const getTodayScheduleWithStudents = () => {
-    return todaySchedule.map(entry => ({
-        ...entry,
-        student: getStudentById(entry.studentId)
-    }));
-};
+

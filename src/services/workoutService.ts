@@ -59,6 +59,3 @@ export function getWorkout(id: string): WorkoutData | undefined {
     return mockWorkouts[id];
 }
 
-export function getWorkouts(): Record<string, WorkoutData> {
-    return mockWorkouts;
-}

@@ -45,27 +45,6 @@ export const NavLabel = styled.span`
     font-weight: 500;
 `;
 
-export const AddButton = styled.button`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 3.5rem; /* size-14 */
-    height: 3.5rem;
-    margin-top: -2rem; /* -mt-8 */
-    background-color: ${theme.colors.primary};
-    color: #000;
-    border-radius: 9999px;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 0 20px rgba(255, 109, 0, 0.4);
-    transition: transform 0.2s;
-
-    &:hover {
-        transform: scale(1.05);
-    }
-`;
-
 /**
  * Invisible spacer that occupies the same slot as the FAB in the flex layout.
  * The real interactive button is rendered via SpeedDial portal above the nav.
