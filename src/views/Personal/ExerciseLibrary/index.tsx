@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { searchExercises, getExercises, getCategories, type Exercise } from '../../../services/exerciseService';
+import { searchExercises, fetchAllExercises, getCategories, fetchCategories, type Exercise } from '../../../services/exerciseService';
 import type { BuilderExercise } from '../../../components/BuilderExerciseItem';
 import { ExerciseItem } from '../../../components/ExerciseItem';
 import { SelectedExerciseItem, type SelectedExercise } from '../../../components/SelectedExerciseItem';
@@ -31,8 +31,6 @@ const SearchIconSVG = () => (
     </svg>
 );
 
-const categories = getCategories();
-
 // State received from WorkoutBuilder
 interface LibraryNavState {
     returnTo?: string;
@@ -51,7 +49,23 @@ export const ExerciseLibrary = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('Todos');
     const [selectedExercises, setSelectedExercises] = useState<SelectedExercise[]>([]);
-    const [exercises, setExercises] = useState<Exercise[]>(getExercises());
+    const [exercises, setExercises] = useState<Exercise[]>([]);
+    const [categoriesList, setCategoriesList] = useState<string[]>(getCategories());
+
+    // Fetch initial exercises and categories on mount
+    useEffect(() => {
+        let mounted = true;
+
+        fetchAllExercises().then(data => {
+            if (mounted) setExercises(data);
+        });
+
+        fetchCategories().then(cats => {
+            if (mounted) setCategoriesList(cats);
+        });
+
+        return () => { mounted = false; };
+    }, []);
 
     // Debounced search via Supabase
     const fetchExercises = useCallback(async (query: string, category: string) => {
@@ -148,7 +162,7 @@ export const ExerciseLibrary = () => {
             </SearchContainer>
 
             <CategoriesContainer>
-                {categories.map(category => (
+                {categoriesList.map(category => (
                     <CategoryButton
                         key={category}
                         $active={selectedCategory === category}

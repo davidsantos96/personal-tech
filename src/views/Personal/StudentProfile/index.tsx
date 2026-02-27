@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getStudentById } from '../../../data/students';
 import {
     getCompletedSessions,
+    fetchCompletedSessions,
     removeCompletedSession,
     subscribeHistory,
 } from '../../../services/workoutHistoryService';
@@ -145,6 +146,13 @@ export const StudentProfile = () => {
         subscribeHistory,
         () => getCompletedSessions(id),
     );
+
+    // Pre-fetch sessions from Supabase so local cache is warm
+    useEffect(() => {
+        if (id) {
+            fetchCompletedSessions(id).catch(() => {});
+        }
+    }, [id]);
 
     // Fetch workouts from DB/Service
     const [workouts, setWorkouts] = useState<any[]>([]);

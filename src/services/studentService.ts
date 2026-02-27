@@ -107,21 +107,31 @@ export async function createStudent(
 // ── Helpers ──
 
 function mapDbStudentToAppStudent(dbStudent: any): Student {
-    // Map db status to app visual status (for legacy compatibility)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Compute visual status dynamically from dates
     let visualStatus: 'updated' | 'expiring' | 'expired' = 'updated';
     let label = 'ATUALIZADO';
 
-    // Simplistic mapping, as visual statuses in app were date-based
     if (dbStudent.status === 'inactive') {
         visualStatus = 'expired';
         label = 'INATIVO';
     } else if (dbStudent.status === 'pending') {
         visualStatus = 'expiring';
         label = 'PENDENTE';
+    } else if (dbStudent.plan_expires_at) {
+        const planExpires = new Date(dbStudent.plan_expires_at + 'T00:00:00');
+        const daysUntilPlan = Math.round((planExpires.getTime() - today.getTime()) / 86_400_000);
+        if (daysUntilPlan <= 0) {
+            visualStatus = 'expired';
+            label = 'VENCIDO';
+        } else if (daysUntilPlan <= 3) {
+            visualStatus = 'expiring';
+            label = `VENCE EM ${daysUntilPlan} DIA${daysUntilPlan > 1 ? 'S' : ''}`;
+        }
     }
 
-    // Convert string inputs to Date objects to check dates if needed,
-    // but the app expects ISO strings.
     return {
         id: dbStudent.id,
         name: dbStudent.full_name,

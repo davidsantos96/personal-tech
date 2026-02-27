@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getStudentWorkout, studentProfile, type StudentWorkoutExercise, type StudentWorkout } from '../../../data/studentPortal';
-import { addCompletedSession } from '../../../services/workoutHistoryService';
+import { addCompletedSession, type SessionExercisePayload } from '../../../services/workoutHistoryService';
 import { ExerciseDemoModal, type DemoModalData } from '../../../components/ExerciseDemoModal';
 import {
     Container,
@@ -185,13 +185,22 @@ export const StudentWorkoutSession = () => {
         } : undefined);
     };
 
-    const handleFinish = () => {
+    const handleFinish = async () => {
         setIsRunning(false);
 
-        // Save completed session to shared history
+        // Save completed session to shared history (local + Supabase)
         if (workout) {
             const completedExercises = workout.exercises.filter(ex => ex.completed).length;
-            addCompletedSession({
+
+            // Build per-exercise detail for session_exercises table
+            const exerciseDetails: SessionExercisePayload[] = workout.exercises.map(ex => ({
+                exercise_name: ex.name,
+                series_completed: seriesDone[ex.id] || 0,
+                series_total: ex.series,
+                completed: ex.completed,
+            }));
+
+            await addCompletedSession({
                 studentId: studentProfile.id,
                 workoutId: id || '',
                 workoutName: workout.name,
@@ -203,7 +212,7 @@ export const StudentWorkoutSession = () => {
                 exercisesCompleted: completedExercises,
                 exercisesTotal: totalCount,
                 source: 'student',
-            });
+            }, exerciseDetails);
         }
 
         setShowCelebration(true);

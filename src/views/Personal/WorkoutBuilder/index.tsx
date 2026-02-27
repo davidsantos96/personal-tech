@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { BuilderExerciseItem, type BuilderExercise } from '../../../components/BuilderExerciseItem';
 import { studentsData } from '../../../data/students';
+import { fetchStudents, type Student } from '../../../services/studentService';
 // Add Student Workout from service removed as its dynamically imported
 import {
     Container,
@@ -62,6 +63,17 @@ export const WorkoutBuilder = () => {
     const [workoutType, setWorkoutType] = useState(navState.workoutType ?? 'Superiores');
     const [selectedStudent, setSelectedStudent] = useState(navState.selectedStudent ?? navState.studentId ?? '');
     const [exercises, setExercises] = useState<BuilderExercise[]>(initialExercises);
+
+    // Students: start with mock, refresh from DB
+    const [students, setStudents] = useState<Student[]>(studentsData);
+
+    useEffect(() => {
+        let mounted = true;
+        fetchStudents().then(data => {
+            if (mounted && data.length > 0) setStudents(data);
+        });
+        return () => { mounted = false; };
+    }, []);
 
     // Validation & save state
     const [errors, setErrors] = useState<{ name?: string; student?: string; exercises?: string }>({});
@@ -222,7 +234,7 @@ export const WorkoutBuilder = () => {
                     }}
                 >
                     <option value="">Selecione um aluno</option>
-                    {studentsData.map(s => (
+                    {students.map(s => (
                         <option key={s.id} value={s.id}>{s.name}</option>
                     ))}
                 </Select>

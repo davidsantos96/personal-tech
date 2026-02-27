@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+//TODO: REFAOTRARAR TODO ESSE COMPONENTE, ELE ESTÁ MUITO GRANDE E COM MUITA LÓGICA EMBUTIDA
+
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getWorkout, TIMED_EXERCISE_MAP, type WorkoutData, type WorkoutExercise as Exercise } from '../../../services/workoutService';
-import { getWorkoutById } from '../../../services/studentWorkoutService';
-import { addCompletedSession } from '../../../services/workoutHistoryService';
+import { getWorkoutById, fetchStudentWorkouts } from '../../../services/studentWorkoutService';
+import { addCompletedSession, type SessionExercisePayload } from '../../../services/workoutHistoryService';
 import { WorkoutExerciseItem } from '../../../components/WorkoutExerciseItem';
 import {
     Container,
@@ -100,7 +102,7 @@ export const WorkoutSession = () => {
                 name: saved.name,
                 type: saved.type,
                 exercises: saved.exercises.map(ex => ({
-                    id: ex.id,
+                    id: ex.id ?? 0,
                     name: ex.name,
                     series: ex.series,
                     reps: ex.reps,
@@ -118,6 +120,38 @@ export const WorkoutSession = () => {
     };
     
     const [workout, setWorkout] = useState<WorkoutData>(resolveWorkout);
+
+    // Async fetch from Supabase if the initial resolve returned an empty workout
+    const loadWorkoutFromDb = useCallback(async () => {
+        if (workout.exercises.length > 0) return; // already resolved
+        try {
+            const remoteWorkouts = await fetchStudentWorkouts(studentId);
+            const match = remoteWorkouts.find(w => w.id === workoutId);
+            if (match) {
+                setWorkout({
+                    name: match.name,
+                    type: match.type,
+                    exercises: match.exercises.map((ex, idx) => ({
+                        id: ex.id ?? idx + 1,
+                        name: ex.name,
+                        series: ex.series,
+                        reps: ex.reps,
+                        weight: ex.weight,
+                        rest: ex.rest,
+                        notes: ex.notes,
+                        gifUrl: ex.gifUrl,
+                        completed: false,
+                    })),
+                });
+            }
+        } catch (err) {
+            console.error('[WorkoutSession] Error loading workout from DB:', err);
+        }
+    }, [workoutId, studentId, workout.exercises.length]);
+
+    useEffect(() => {
+        loadWorkoutFromDb();
+    }, [loadWorkoutFromDb]);
     const [isRunning, setIsRunning] = useState(false);
     const [elapsedTime, setElapsedTime] = useState(0);
     const [showCelebration, setShowCelebration] = useState(false);
@@ -208,7 +242,7 @@ export const WorkoutSession = () => {
         }));
     };
 
-    const handleFinishWorkout = () => {
+    const handleFinishWorkout = async () => {
         setIsRunning(false);
         // Reset any active timers to avoid modal overlap
         setIsResting(false);
@@ -220,9 +254,17 @@ export const WorkoutSession = () => {
         setExecutionExercise(null);
         setExecutionPaused(false);
 
-        // Save completed session to history
+        // Build per-exercise detail for session_exercises table
+        const exerciseDetails: SessionExercisePayload[] = workout.exercises.map(ex => ({
+            exercise_name: ex.name,
+            series_completed: seriesCompleted[ex.id] || 0,
+            series_total: ex.series,
+            completed: ex.completed,
+        }));
+
+        // Save completed session to history (local + Supabase)
         const completedExercises = workout.exercises.filter(ex => ex.completed).length;
-        addCompletedSession({
+        await addCompletedSession({
             studentId,
             workoutId,
             workoutName: workout.name,
@@ -234,7 +276,7 @@ export const WorkoutSession = () => {
             exercisesCompleted: completedExercises,
             exercisesTotal: totalCount,
             source: 'personal',
-        });
+        }, exerciseDetails);
 
         setShowCelebration(true);
     };

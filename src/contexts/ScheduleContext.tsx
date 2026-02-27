@@ -1,5 +1,7 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import { todaySchedule, getStudentById, type ScheduleEntry, type Student } from '../data/students';
+import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
+import { fetchStudents } from '../services/studentService';
 
 // Enriched schedule entry for Dashboard usage
 interface EnrichedScheduleEntry extends ScheduleEntry {
@@ -111,6 +113,100 @@ const deriveFilledSchedule = (agendaItems: AgendaDisplayItem[]): EnrichedSchedul
 
 export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
     const [agendaItems, setAgendaItems] = useState<AgendaDisplayItem[]>(buildInitialAgendaItems);
+
+    // Fetch today's appointments from Supabase when configured
+    useEffect(() => {
+        if (!isSupabaseConfigured) return;
+
+        let mounted = true;
+
+        const loadFromDb = async () => {
+            try {
+                const supabase = await getSupabase();
+                const today = new Date();
+                const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
+                const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59).toISOString();
+
+                const { data: appointments, error } = await supabase
+                    .from('appointments')
+                    .select('*')
+                    .gte('starts_at', startOfDay)
+                    .lte('starts_at', endOfDay)
+                    .order('starts_at', { ascending: true });
+
+                if (error) throw error;
+                if (!appointments || appointments.length === 0) return;
+
+                // Fetch all students to map IDs → names/avatar
+                const students = await fetchStudents();
+                const studentMap = new Map(students.map(s => [s.id, s]));
+
+                const COLORS = ['#22C55E', '#FF6D00', '#EAB308', '#3B82F6', '#8B5CF6', '#EC4899'];
+
+                const dbItems: AgendaDisplayItem[] = (appointments as any[]).map((appt, idx) => {
+                    const start = new Date(appt.starts_at);
+                    const end = appt.ends_at ? new Date(appt.ends_at) : new Date(start.getTime() + (appt.duration_minutes || 60) * 60_000);
+                    const timeStr = start.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    const endStr = end.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    const student = appt.student_id ? studentMap.get(appt.student_id) : undefined;
+                    const color = COLORS[idx % COLORS.length];
+
+                    // Determine status based on whether it's in the past
+                    const isPast = end < today;
+                    const isCancelled = appt.status === 'cancelled';
+                    const isCompleted = appt.status === 'completed';
+
+                    let statusVariant: 'default' | 'highlight' | 'free' | 'past' = 'default';
+                    let statusIcon: 'check' | 'calendar' | 'clock' | undefined = 'clock';
+                    let statusColor = '#94a3b8';
+
+                    if (isCompleted || isPast) {
+                        statusVariant = 'past';
+                        statusIcon = 'check';
+                        statusColor = '#22C55E';
+                    } else if (appt.status === 'free' || isCancelled) {
+                        statusVariant = 'free';
+                        statusIcon = undefined;
+                    }
+
+                    if (appt.student_id && !isCancelled && appt.status !== 'free') {
+                        return {
+                            id: appt.id,
+                            type: 'filled' as const,
+                            time: timeStr,
+                            endTime: endStr,
+                            clientName: student?.name || 'Aluno',
+                            activity: appt.activity || 'Treino',
+                            avatar: student?.avatar,
+                            statusVariant,
+                            statusIcon,
+                            statusColor,
+                            studentId: appt.student_id,
+                            color,
+                            detail: appt.notes || appt.activity || '',
+                        };
+                    } else {
+                        return {
+                            id: appt.id || `free-db-${idx}`,
+                            type: 'free' as const,
+                            time: timeStr,
+                            statusVariant: 'free' as const,
+                        };
+                    }
+                });
+
+                if (mounted) {
+                    setAgendaItems(sortItemsByTime(dbItems));
+                }
+            } catch (err) {
+                console.error('[ScheduleContext] Error loading appointments:', err);
+                // Keep mock data on error
+            }
+        };
+
+        loadFromDb();
+        return () => { mounted = false; };
+    }, []);
 
     const filledSchedule = deriveFilledSchedule(agendaItems);
 

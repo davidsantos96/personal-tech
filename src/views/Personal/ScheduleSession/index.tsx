@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Container,
@@ -32,6 +32,7 @@ import {
     ScheduleButton,
 } from './styles';
 import { studentsData } from '../../../data/students';
+import { fetchStudents, type Student } from '../../../services/studentService';
 
 /* ── Icons ── */
 const ChevronLeftIcon = () => (
@@ -92,6 +93,17 @@ export const ScheduleSession = () => {
     const [currentYear, setCurrentYear] = useState(today.getFullYear());
     const [currentMonth, setCurrentMonth] = useState(today.getMonth());
     const [selectedDay, setSelectedDay] = useState(today.getDate());
+
+    // Students: start with mock data, refresh from Supabase
+    const [students, setStudents] = useState<Student[]>(studentsData);
+
+    useEffect(() => {
+        let mounted = true;
+        fetchStudents().then(data => {
+            if (mounted && data.length > 0) setStudents(data);
+        });
+        return () => { mounted = false; };
+    }, []);
 
     const [form, setForm] = useState<FormState>({
         studentId: '',
@@ -187,7 +199,7 @@ export const ScheduleSession = () => {
                             onChange={e => handleField('studentId', e.target.value)}
                         >
                             <option value="">Escolha um aluno...</option>
-                            {studentsData.map(s => (
+                            {students.map(s => (
                                 <option key={s.id} value={s.id}>
                                     {s.name}
                                 </option>

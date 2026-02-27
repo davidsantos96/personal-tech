@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getActiveStudents } from '../../../data/students';
+import { fetchStudents, type Student } from '../../../services/studentService';
 import { useSchedule } from '../../../contexts/ScheduleContext';
 import { useSpeedDial } from '../../../contexts/SpeedDialContext';
 import {
@@ -55,8 +56,19 @@ export const StatsCards = () => {
     const navigate = useNavigate();
     const { hideSpeedDial, showSpeedDial } = useSpeedDial();
 
-    const activeStudents = getActiveStudents();
+    // Start with sync mock data, then refresh from Supabase
+    const [activeStudents, setActiveStudents] = useState<Student[]>(getActiveStudents);
     const { filledSchedule, totalWorkouts, completedWorkouts, pendingWorkouts } = useSchedule();
+
+    useEffect(() => {
+        let mounted = true;
+        fetchStudents().then(all => {
+            if (mounted) {
+                setActiveStudents(all.filter(s => s.isActive));
+            }
+        });
+        return () => { mounted = false; };
+    }, []);
 
     const openModal = (modal: ModalType) => {
         setActiveModal(modal);
