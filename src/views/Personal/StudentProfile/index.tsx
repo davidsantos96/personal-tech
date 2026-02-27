@@ -1,4 +1,6 @@
-import { useState, useSyncExternalStore } from 'react';
+//TODO: REFATORAR O CÓDIGO, E SEPARAR MOCKS
+
+import { useState, useSyncExternalStore, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getStudentById } from '../../../data/students';
 import {
@@ -7,9 +9,7 @@ import {
     subscribeHistory,
 } from '../../../services/workoutHistoryService';
 import {
-    getStudentWorkouts,
     removeStudentWorkout,
-    subscribeWorkouts,
 } from '../../../services/studentWorkoutService';
 import {
     Container,
@@ -146,11 +146,20 @@ export const StudentProfile = () => {
         () => getCompletedSessions(id),
     );
 
-    // Reactive saved workouts — re-renders when workouts change
-    const workouts = useSyncExternalStore(
-        subscribeWorkouts,
-        () => getStudentWorkouts(id),
-    );
+    // Fetch workouts from DB/Service
+    const [workouts, setWorkouts] = useState<any[]>([]);
+
+    useEffect(() => {
+        let isMounted = true;
+        if (id) {
+            import('../../../services/studentWorkoutService').then(({ fetchStudentWorkouts }) => {
+                fetchStudentWorkouts(id).then(data => {
+                    if (isMounted) setWorkouts(data);
+                });
+            });
+        }
+        return () => { isMounted = false; };
+    }, [id]);
 
     // Status label map
     const statusLabels: Record<string, string> = {
@@ -278,7 +287,12 @@ export const StudentProfile = () => {
                                     <WorkoutActionButton
                                         $danger
                                         title="Remover treino"
-                                        onClick={(e) => { e.stopPropagation(); removeStudentWorkout(w.id); }}
+                                        onClick={async (e) => {
+                                            e.stopPropagation();
+                                            await removeStudentWorkout(w.id);
+                                            // Refresh local view
+                                            setWorkouts(prev => prev.filter(work => work.id !== w.id));
+                                        }}
                                     >
                                         <TrashIcon />
                                     </WorkoutActionButton>

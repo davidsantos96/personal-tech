@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { studentsData } from '../../../services/studentService';
+import { fetchStudents, type Student } from '../../../services/studentService';
 import { StudentItem } from '../../../components/StudentItem';
 import { BottomNav } from '../../../components/Layout/BottomNav';
 import { LogoCircle } from '../../../components/Logo';
@@ -32,9 +32,22 @@ const SearchIcon = () => (
 export const Students = () => {
     const [activeTab, setActiveTab] = useState('Todos');
     const [searchTerm, setSearchTerm] = useState('');
+    const [students, setStudents] = useState<Student[]>([]);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
-    const filteredStudents = studentsData
+    useEffect(() => {
+        let isMounted = true;
+        fetchStudents().then(data => {
+            if (isMounted) {
+                setStudents(data);
+                setLoading(false);
+            }
+        });
+        return () => { isMounted = false; };
+    }, []);
+
+    const filteredStudents = students
         .filter(student => {
             // Filter by tab
             if (activeTab === 'Ativos') return student.isActive;
@@ -82,13 +95,23 @@ export const Students = () => {
             </FilterScroll>
 
             <StudentsList>
-                {filteredStudents.map((student) => (
-                    <StudentItem
-                        key={student.id}
-                        student={student}
-                        onClick={(id) => navigate(`/perfil-aluno/${id}`)}
-                    />
-                ))}
+                {loading ? (
+                    <div style={{ padding: '20px', textAlign: 'center', color: '#94a3b8' }}>
+                        Carregando alunos...
+                    </div>
+                ) : filteredStudents.length > 0 ? (
+                    filteredStudents.map((student) => (
+                        <StudentItem
+                            key={student.id}
+                            student={student}
+                            onClick={(id) => navigate(`/perfil-aluno/${id}`)}
+                        />
+                    ))
+                ) : (
+                    <div style={{ padding: '20px', textAlign: 'center', color: '#94a3b8' }}>
+                        {searchTerm ? 'Nenhum aluno encontrado.' : 'Você ainda não possui alunos cadastrados.'}
+                    </div>
+                )}
             </StudentsList>
 
             <BottomNav />

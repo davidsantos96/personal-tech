@@ -1,0 +1,9 @@
+﻿src/services/exerciseService.ts(63,68): error TS2345: Argument of type 'string' is not assignable to parameter of type 'NonNullable<"Peito" | "Costas" | "Pernas" | "Ombros" | "Bra├ºos" | "Core" | "Cardio" | "Full Body" | null>'.
+src/views/Auth/Login/index.tsx(58,84): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: Omit<Trainer, "id" | "created_at" | "updated_at"> & { id?: string | undefined; created_at?: string | undefined; updated_at?: string | undefined; }, options?: { ...; } | undefined): PostgrestFilterBuilder<...>', gave the following error.
+    Argument of type '{ auth_id: string; email: string; full_name: string; }' is not assignable to parameter of type 'Omit<Trainer, "id" | "created_at" | "updated_at"> & { id?: string | undefined; created_at?: string | undefined; updated_at?: string | undefined; }'.
+      Type '{ auth_id: string; email: string; full_name: string; }' is missing the following properties from type 'Omit<Trainer, "id" | "created_at" | "updated_at">': phone, avatar_url, specialty
+  Overload 2 of 2, '(values: (Omit<Trainer, "id" | "created_at" | "updated_at"> & { id?: string | undefined; created_at?: string | undefined; updated_at?: string | undefined; })[], options?: { ...; } | undefined): PostgrestFilterBuilder<...>', gave the following error.
+    Object literal may only specify known properties, and 'auth_id' does not exist in type '(Omit<Trainer, "id" | "created_at" | "updated_at"> & { id?: string | undefined; created_at?: string | undefined; updated_at?: string | undefined; })[]'.
+src/views/Personal/WorkoutSession/index.tsx(4,10): error TS2305: Module '"../../../services/studentWorkoutService"' has no exported member 'getWorkoutById'.
+src/views/Personal/WorkoutSession/index.tsx(102,48): error TS7006: Parameter 'ex' implicitly has an 'any' type.

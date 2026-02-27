@@ -4,6 +4,7 @@ import { theme } from './styles/theme';
 import { GlobalStyles } from './styles/global';
 import { ScheduleProvider } from './contexts/ScheduleContext';
 import { SpeedDialProvider, useSpeedDial } from './contexts/SpeedDialContext';
+import { AuthProvider } from './contexts/AuthContext';
 import { AppRoutes } from './routes';
 import { SpeedDial } from './components/SpeedDial';
 
@@ -31,11 +32,13 @@ function App() {
     <ThemeProvider theme={theme}>
       <GlobalStyles />
       <BrowserRouter>
-        <ScheduleProvider>
-          <SpeedDialProvider>
-            <AppShell />
-          </SpeedDialProvider>
-        </ScheduleProvider>
+        <AuthProvider>
+          <ScheduleProvider>
+            <SpeedDialProvider>
+              <AppShell />
+            </SpeedDialProvider>
+          </ScheduleProvider>
+        </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
   )

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { BuilderExerciseItem, type BuilderExercise } from '../../../components/BuilderExerciseItem';
 import { studentsData } from '../../../data/students';
-import { addStudentWorkout } from '../../../services/studentWorkoutService';
+// Add Student Workout from service removed as its dynamically imported
 import {
     Container,
     Header,
@@ -74,7 +74,7 @@ export const WorkoutBuilder = () => {
     const formatRestTime = (seconds: string): string => {
         const sec = parseInt(seconds);
         if (isNaN(sec)) return '0s';
-        
+
         if (sec >= 60) {
             const minutes = Math.floor(sec / 60);
             const remainingSeconds = sec % 60;
@@ -88,7 +88,7 @@ export const WorkoutBuilder = () => {
 
     // Atualiza um campo específico de um exercício
     const handleUpdateExercise = (id: string, field: keyof BuilderExercise, value: string) => {
-        setExercises(exercises.map(ex => 
+        setExercises(exercises.map(ex =>
             ex.id === id ? { ...ex, [field]: value } : ex
         ));
     };
@@ -136,9 +136,9 @@ export const WorkoutBuilder = () => {
             validDate.setDate(validDate.getDate() + 30);
             const validUntil = validDate.toISOString().split('T')[0];
 
-            // TODO: Replace with Supabase call
-            // const { data, error } = await supabase.from('workouts').insert({...});
-            addStudentWorkout({
+            const { addStudentWorkoutApi } = await import('../../../services/studentWorkoutService');
+
+            const result = await addStudentWorkoutApi({
                 studentId: selectedStudent,
                 name: workoutName,
                 type: workoutType,
@@ -147,6 +147,7 @@ export const WorkoutBuilder = () => {
                 estimatedMinutes,
                 exercises: exercises.map((ex, idx) => ({
                     id: idx + 1,
+                    exercise_id: ex.id.startsWith('custom-') ? undefined : ex.id,
                     name: ex.name,
                     muscleGroup: ex.muscleGroup,
                     series: parseInt(ex.series) || 0,
@@ -157,6 +158,8 @@ export const WorkoutBuilder = () => {
                     gifUrl: ex.gifUrl,
                 })),
             });
+
+            if (!result) throw new Error('Failed to save workout to DB');
 
             // Show success feedback before navigating
             setShowSuccess(true);
@@ -186,8 +189,8 @@ export const WorkoutBuilder = () => {
 
             <FormSection>
                 <Label>Nome do Treino</Label>
-                <Input 
-                    type="text" 
+                <Input
+                    type="text"
                     placeholder="Ex: Treino A - Hipertrofia"
                     value={workoutName}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -211,7 +214,7 @@ export const WorkoutBuilder = () => {
                 </Select>
 
                 <Label>Aluno</Label>
-                <Select 
+                <Select
                     value={selectedStudent}
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                         setSelectedStudent(e.target.value);

@@ -84,6 +84,8 @@ export const NewStudent = () => {
     const [form, setForm] = useState<FormData>(INITIAL_FORM);
     const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
+    const [isSaving, setIsSaving] = useState(false);
+
     const handleChange = (field: keyof FormData) => (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
@@ -103,10 +105,31 @@ export const NewStudent = () => {
 
     const isValid = form.name.trim().length > 0 && form.email.trim().length > 0;
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!isValid) return;
-        // TODO: persist to store/backend
-        navigate('/alunos');
+        setIsSaving(true);
+        try {
+            // Import dynamically to avoid top-level dependencies if needed, or just import it at top
+            const { createStudent } = await import('../../../services/studentService');
+            await createStudent({
+                full_name: form.name.trim(),
+                email: form.email.trim() || null,
+                phone: form.phone.trim() || null,
+                goal: (form.goal.toLowerCase() as any) || null,
+                avatar_url: photoUrl || null,
+                status: 'active',
+                plan_expires_at: null,
+                last_evaluation_at: null,
+                last_training_at: null,
+                workout_series_expires_at: null
+            } as any);
+            navigate('/alunos', { replace: true });
+        } catch (error) {
+            console.error('Failed to save student:', error);
+            alert('Erro ao salvar aluno');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -254,9 +277,9 @@ export const NewStudent = () => {
             </FormSection>
 
             {/* ── Save Button ── */}
-            <SaveButton onClick={handleSave} disabled={!isValid}>
+            <SaveButton onClick={handleSave} disabled={!isValid || isSaving}>
                 <UserPlusIcon />
-                Salvar Aluno
+                {isSaving ? 'Salvando...' : 'Salvar Aluno'}
             </SaveButton>
         </Container>
     );

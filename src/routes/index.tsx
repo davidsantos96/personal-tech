@@ -1,5 +1,9 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+
+// Auth View
+const Login = lazy(() => import('../views/Auth/Login').then(m => ({ default: m.Login })));
 
 // Lazy-load all views for code-splitting
 const Home = lazy(() => import('../views/Personal/Home').then(m => ({ default: m.Home })));
@@ -23,23 +27,38 @@ const StudentProgress = lazy(() => import('../views/Student/Progress').then(m =>
 const StudentHistory = lazy(() => import('../views/Student/History').then(m => ({ default: m.StudentHistory })));
 const StudentProfileView = lazy(() => import('../views/Student/Profile').then(m => ({ default: m.StudentProfileView })));
 
-export const AppRoutes = () => (
-    <Suspense fallback={null}>
-        <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/alunos" element={<Students />} />
-            <Route path="/agenda" element={<Agenda />} />
-            <Route path="/perfil-aluno/:id" element={<StudentProfile />} />
-            <Route path="/montar-treino" element={<WorkoutBuilder />} />
-            <Route path="/biblioteca-exercicios" element={<ExerciseLibrary />} />
-            <Route path="/treino-sessao" element={<WorkoutSession />} />
-            <Route path="/novo-aluno" element={<NewStudent />} />
-            <Route path="/novo-agendamento" element={<ScheduleSession />} />
-            <Route path="/anamnese" element={<Anamnese />} />
-            <Route path="/avaliacao-fisica" element={<AvaliacaoFisica />} />
-            <Route path="/perfil" element={<TrainerProfile />} />
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+    const { user, isLoading, isMockMode } = useAuth();
 
-            {/* Student Routes */}
+    if (isLoading) return <div>Carregando...</div>;
+
+    if (!user && !isMockMode) {
+        return <Navigate to="/login" replace />;
+    }
+
+    return <>{children}</>;
+};
+
+export const AppRoutes = () => (
+    <Suspense fallback={<div>Carregando...</div>}>
+        <Routes>
+            <Route path="/login" element={<Login />} />
+
+            {/* Protected Personal Trainer Routes */}
+            <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+            <Route path="/alunos" element={<PrivateRoute><Students /></PrivateRoute>} />
+            <Route path="/agenda" element={<PrivateRoute><Agenda /></PrivateRoute>} />
+            <Route path="/perfil-aluno/:id" element={<PrivateRoute><StudentProfile /></PrivateRoute>} />
+            <Route path="/montar-treino" element={<PrivateRoute><WorkoutBuilder /></PrivateRoute>} />
+            <Route path="/biblioteca-exercicios" element={<PrivateRoute><ExerciseLibrary /></PrivateRoute>} />
+            <Route path="/treino-sessao" element={<PrivateRoute><WorkoutSession /></PrivateRoute>} />
+            <Route path="/novo-aluno" element={<PrivateRoute><NewStudent /></PrivateRoute>} />
+            <Route path="/novo-agendamento" element={<PrivateRoute><ScheduleSession /></PrivateRoute>} />
+            <Route path="/anamnese" element={<PrivateRoute><Anamnese /></PrivateRoute>} />
+            <Route path="/avaliacao-fisica" element={<PrivateRoute><AvaliacaoFisica /></PrivateRoute>} />
+            <Route path="/perfil" element={<PrivateRoute><TrainerProfile /></PrivateRoute>} />
+
+            {/* Student Routes (Assuming they could be accessed differently later, simplified for now) */}
             <Route path="/aluno" element={<StudentHome />} />
             <Route path="/aluno/treinos" element={<StudentWorkouts />} />
             <Route path="/aluno/treino/:id" element={<StudentWorkoutSession />} />

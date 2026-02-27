@@ -1,0 +1,7 @@
+﻿src/views/Auth/Login/index.tsx(58,84): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(values: never, options?: { count?: "exact" | "planned" | "estimated" | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "trainers", never, "POST">', gave the following error.
+    Argument of type '{ auth_id: string; email: string | undefined; full_name: string; }' is not assignable to parameter of type 'never'.
+  Overload 2 of 2, '(values: never[], options?: { count?: "exact" | "planned" | "estimated" | undefined; defaultToNull?: boolean | undefined; } | undefined): PostgrestFilterBuilder<{ PostgrestVersion: "12"; }, never, never, null, "trainers", never, "POST">', gave the following error.
+    Object literal may only specify known properties, and 'auth_id' does not exist in type 'never[]'.
+src/views/Personal/WorkoutSession/index.tsx(4,10): error TS2305: Module '"../../../services/studentWorkoutService"' has no exported member 'getWorkoutById'.
+src/views/Personal/WorkoutSession/index.tsx(102,48): error TS7006: Parameter 'ex' implicitly has an 'any' type.

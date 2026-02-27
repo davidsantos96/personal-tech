@@ -19,7 +19,7 @@ export type Json =
 /* ------------------------------------------------------------------ */
 
 // 1. TRAINERS
-export interface Trainer {
+export type Trainer = {
     id: string;           // uuid PK
     auth_id: string;      // uuid, FK auth.users
     full_name: string;
@@ -32,7 +32,7 @@ export interface Trainer {
 }
 
 // 2. STUDENTS
-export interface Student {
+export type Student = {
     id: string;
     trainer_id: string;
     full_name: string;
@@ -52,7 +52,7 @@ export interface Student {
 }
 
 // 3. BODY ASSESSMENTS
-export interface BodyAssessment {
+export type BodyAssessment = {
     id: string;
     student_id: string;
     weight_kg: number | null;
@@ -64,7 +64,7 @@ export interface BodyAssessment {
 }
 
 // 4. EXERCISES
-export interface Exercise {
+export type Exercise = {
     id: string;
     name: string;
     muscle_group: string | null;
@@ -79,7 +79,7 @@ export interface Exercise {
 }
 
 // 5. WORKOUT PLANS
-export interface WorkoutPlan {
+export type WorkoutPlan = {
     id: string;
     student_id: string;
     trainer_id: string;
@@ -94,7 +94,7 @@ export interface WorkoutPlan {
 }
 
 // 6. WORKOUT PLAN EXERCISES
-export interface WorkoutPlanExercise {
+export type WorkoutPlanExercise = {
     id: string;
     workout_plan_id: string;
     exercise_id: string;
@@ -108,7 +108,7 @@ export interface WorkoutPlanExercise {
 }
 
 // 7. APPOINTMENTS
-export interface Appointment {
+export type Appointment = {
     id: string;
     trainer_id: string;
     student_id: string | null;
@@ -124,7 +124,7 @@ export interface Appointment {
 }
 
 // 8. WORKOUT SESSIONS
-export interface WorkoutSession {
+export type WorkoutSession = {
     id: string;
     student_id: string;
     workout_plan_id: string | null;
@@ -138,7 +138,7 @@ export interface WorkoutSession {
 }
 
 // 9. SESSION EXERCISES
-export interface SessionExercise {
+export type SessionExercise = {
     id: string;
     session_id: string;
     exercise_id: string | null;
@@ -150,7 +150,7 @@ export interface SessionExercise {
 }
 
 // 10. FINANCIAL RECORDS
-export interface FinancialRecord {
+export type FinancialRecord = {
     id: string;
     trainer_id: string;
     student_id: string | null;
@@ -163,7 +163,7 @@ export interface FinancialRecord {
 }
 
 // 11. NOTIFICATIONS
-export interface Notification {
+export type Notification = {
     id: string;
     trainer_id: string;
     title: string;
@@ -189,6 +189,7 @@ export interface Database {
                     updated_at?: string;
                 };
                 Update: Partial<Omit<Trainer, 'id'>>;
+                Relationships: { foreignKeyName: string; columns: string[]; isOneToOne?: boolean; referencedRelation: string; referencedColumns: string[] }[];
             };
             students: {
                 Row: Student;
@@ -201,6 +202,7 @@ export interface Database {
                     updated_at?: string;
                 };
                 Update: Partial<Omit<Student, 'id'>>;
+                Relationships: { foreignKeyName: string; columns: string[]; isOneToOne?: boolean; referencedRelation: string; referencedColumns: string[] }[];
             };
             body_assessments: {
                 Row: BodyAssessment;
@@ -211,6 +213,7 @@ export interface Database {
                     created_at?: string;
                 };
                 Update: Partial<Omit<BodyAssessment, 'id'>>;
+                Relationships: { foreignKeyName: string; columns: string[]; isOneToOne?: boolean; referencedRelation: string; referencedColumns: string[] }[];
             };
             exercises: {
                 Row: Exercise;
@@ -220,6 +223,7 @@ export interface Database {
                     created_at?: string;
                 };
                 Update: Partial<Omit<Exercise, 'id'>>;
+                Relationships: { foreignKeyName: string; columns: string[]; isOneToOne?: boolean; referencedRelation: string; referencedColumns: string[] }[];
             };
             workout_plans: {
                 Row: WorkoutPlan;
@@ -231,6 +235,7 @@ export interface Database {
                     updated_at?: string;
                 };
                 Update: Partial<Omit<WorkoutPlan, 'id'>>;
+                Relationships: { foreignKeyName: string; columns: string[]; isOneToOne?: boolean; referencedRelation: string; referencedColumns: string[] }[];
             };
             workout_plan_exercises: {
                 Row: WorkoutPlanExercise;
@@ -243,6 +248,7 @@ export interface Database {
                     created_at?: string;
                 };
                 Update: Partial<Omit<WorkoutPlanExercise, 'id'>>;
+                Relationships: { foreignKeyName: string; columns: string[]; isOneToOne?: boolean; referencedRelation: string; referencedColumns: string[] }[];
             };
             appointments: {
                 Row: Appointment;
@@ -255,6 +261,7 @@ export interface Database {
                     updated_at?: string;
                 };
                 Update: Partial<Omit<Appointment, 'id'>>;
+                Relationships: { foreignKeyName: string; columns: string[]; isOneToOne?: boolean; referencedRelation: string; referencedColumns: string[] }[];
             };
             workout_sessions: {
                 Row: WorkoutSession;
@@ -267,6 +274,7 @@ export interface Database {
                     created_at?: string;
                 };
                 Update: Partial<Omit<WorkoutSession, 'id'>>;
+                Relationships: { foreignKeyName: string; columns: string[]; isOneToOne?: boolean; referencedRelation: string; referencedColumns: string[] }[];
             };
             session_exercises: {
                 Row: SessionExercise;
@@ -278,6 +286,7 @@ export interface Database {
                     created_at?: string;
                 };
                 Update: Partial<Omit<SessionExercise, 'id'>>;
+                Relationships: { foreignKeyName: string; columns: string[]; isOneToOne?: boolean; referencedRelation: string; referencedColumns: string[] }[];
             };
             financial_records: {
                 Row: FinancialRecord;
@@ -288,6 +297,7 @@ export interface Database {
                     created_at?: string;
                 };
                 Update: Partial<Omit<FinancialRecord, 'id'>>;
+                Relationships: { foreignKeyName: string; columns: string[]; isOneToOne?: boolean; referencedRelation: string; referencedColumns: string[] }[];
             };
             notifications: {
                 Row: Notification;
@@ -298,6 +308,7 @@ export interface Database {
                     created_at?: string;
                 };
                 Update: Partial<Omit<Notification, 'id'>>;
+                Relationships: { foreignKeyName: string; columns: string[]; isOneToOne?: boolean; referencedRelation: string; referencedColumns: string[] }[];
             };
         };
         Functions: {
@@ -305,6 +316,15 @@ export interface Database {
                 Args: Record<string, never>;
                 Returns: string;
             };
+        };
+        Views: {
+            [_ in never]: never;
+        };
+        Enums: {
+            [_ in never]: never;
+        };
+        CompositeTypes: {
+            [_ in never]: never;
         };
     };
 }
