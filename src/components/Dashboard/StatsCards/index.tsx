@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getActiveStudents } from '../../../data/students';
 import { fetchStudents, type Student } from '../../../services/studentService';
+import { isSupabaseConfigured } from '../../../lib/supabase';
 import { useSchedule } from '../../../contexts/ScheduleContext';
 import { useSpeedDial } from '../../../contexts/SpeedDialContext';
 import {
@@ -56,8 +57,10 @@ export const StatsCards = () => {
     const navigate = useNavigate();
     const { hideSpeedDial, showSpeedDial } = useSpeedDial();
 
-    // Start with sync mock data, then refresh from Supabase
-    const [activeStudents, setActiveStudents] = useState<Student[]>(getActiveStudents);
+    // Start with mock data only when running offline, empty when Supabase is configured
+    const [activeStudents, setActiveStudents] = useState<Student[]>(
+        isSupabaseConfigured ? [] : getActiveStudents
+    );
     const { filledSchedule, totalWorkouts, completedWorkouts, pendingWorkouts } = useSchedule();
 
     useEffect(() => {

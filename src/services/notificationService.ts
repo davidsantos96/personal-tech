@@ -14,7 +14,10 @@ import {
 
 // ── In-memory cache + reactive subscriptions ─────────────────────
 
-let _cache: AppNotification[] | null = null;
+// Stable empty reference — prevents useSyncExternalStore infinite loop
+const EMPTY: AppNotification[] = [];
+
+let _cache: AppNotification[] = EMPTY;
 let _listeners: Array<() => void> = [];
 let _snapshotVersion = 0;
 let _lastFetchTime = 0;
@@ -36,7 +39,7 @@ export function subscribeNotifications(listener: () => void): () => void {
 
 /** Synchronous snapshot for useSyncExternalStore */
 export function getNotificationsSnapshot(): AppNotification[] {
-    return _cache ?? [];
+    return _cache;
 }
 
 // ── Fetch notifications dynamically ──────────────────────────────
@@ -70,7 +73,7 @@ export async function fetchNotifications(): Promise<AppNotification[]> {
     } catch (err) {
         console.error('[notificationService] fetchNotifications error:', err);
         // Fall back to existing cache or empty
-        return _cache ?? [];
+        return _cache;
     }
 }
 

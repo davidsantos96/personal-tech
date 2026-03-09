@@ -112,7 +112,10 @@ const deriveFilledSchedule = (agendaItems: AgendaDisplayItem[]): EnrichedSchedul
 };
 
 export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
-    const [agendaItems, setAgendaItems] = useState<AgendaDisplayItem[]>(buildInitialAgendaItems);
+    const [agendaItems, setAgendaItems] = useState<AgendaDisplayItem[]>(
+        // Only use mock data when NOT connected to Supabase
+        isSupabaseConfigured ? [] : buildInitialAgendaItems
+    );
 
     // Fetch today's appointments from Supabase when configured
     useEffect(() => {
@@ -135,7 +138,11 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
                     .order('starts_at', { ascending: true });
 
                 if (error) throw error;
-                if (!appointments || appointments.length === 0) return;
+                if (!appointments || appointments.length === 0) {
+                    // Ensure empty state for new users
+                    if (mounted) setAgendaItems([]);
+                    return;
+                }
 
                 // Fetch all students to map IDs → names/avatar
                 const students = await fetchStudents();

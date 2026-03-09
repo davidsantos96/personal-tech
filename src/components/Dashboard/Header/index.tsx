@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     HeaderContainer,
     ProfileSection,
@@ -15,10 +15,35 @@ import {
 import { LogoCircle } from '../../Logo';
 import { useNotifications } from '../../../hooks/useNotifications';
 import { NotificationDrawer } from '../../NotificationDrawer';
+import { useAuth } from '../../../contexts/AuthContext';
+import { getSupabase, isSupabaseConfigured } from '../../../lib/supabase';
 
 export const Header = () => {
     const { unreadCount, criticalCount } = useNotifications();
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const { user } = useAuth();
+    const [trainerName, setTrainerName] = useState('Personal');
+
+    useEffect(() => {
+        if (!isSupabaseConfigured || !user) return;
+
+        let mounted = true;
+        const loadTrainerName = async () => {
+            try {
+                const supabase = await getSupabase();
+                const { data: trainer } = await supabase
+                    .from('trainers')
+                    .select('full_name')
+                    .eq('auth_id', user.id)
+                    .single();
+                if (mounted && trainer) {
+                    setTrainerName((trainer as any).full_name || 'Personal');
+                }
+            } catch { /* keep default */ }
+        };
+        loadTrainerName();
+        return () => { mounted = false; };
+    }, [user]);
 
     return (
         <HeaderContainer>
@@ -26,7 +51,7 @@ export const Header = () => {
                 <LogoCircle size={32} id="header-mark" />
                 <UserInfo>
                     <WelcomeText>Bem-vindo de volta,</WelcomeText>
-                    <UserName>Coach Silva</UserName>
+                    <UserName>{trainerName}</UserName>
                 </UserInfo>
             </ProfileSection>
             <RightActions>
