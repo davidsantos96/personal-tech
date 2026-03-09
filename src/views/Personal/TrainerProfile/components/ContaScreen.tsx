@@ -1,3 +1,7 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../../contexts/AuthContext';
+import { fetchTrainerProfile } from '../../../../services/trainerService';
 import {
     Topbar,
     BackButton,
@@ -26,81 +30,98 @@ const ChevronLeftIcon = () => (
     </svg>
 );
 
-const SEGURANCA = [
-    { icon: '🔑', variant: 'orange' as const, label: 'Alterar senha', sub: 'Última alteração há 3 meses' },
-    { icon: '📧', variant: undefined, label: 'Alterar e-mail', sub: 'coach@personaltech.app' },
-    { icon: '📱', variant: undefined, label: 'Autenticação em 2 fatores', sub: '⚠ Desativada — recomendamos ativar' },
-];
-
-const DADOS = [
-    { icon: '📤', label: 'Exportar meus dados', sub: 'LGPD — formato JSON ou CSV' },
-    { icon: '🗑️', label: 'Excluir conta', sub: 'Ação irreversível' },
-];
-
 interface ContaScreenProps {
     onBack: () => void;
 }
 
-export const ContaScreen = ({ onBack }: ContaScreenProps) => (
-    <>
-        <Topbar>
-            <BackButton onClick={onBack}><ChevronLeftIcon /></BackButton>
-            <TopbarTitle>Conta & Segurança</TopbarTitle>
-        </Topbar>
-        <ScrollPane>
-            <SectionBody>
-                <SectionLabel>Plano atual</SectionLabel>
-                <PlanCard>
-                    <PlanInfo>
-                        <PlanTitle>⭐ Plano Pro</PlanTitle>
-                        <PlanSub>Renova em 15 Mar 2026 · R$ 49,90/mês</PlanSub>
-                    </PlanInfo>
-                    <PlanButton>Gerenciar</PlanButton>
-                </PlanCard>
+export const ContaScreen = ({ onBack }: ContaScreenProps) => {
+    const { signOut } = useAuth();
+    const navigate = useNavigate();
+    const [trainerEmail, setTrainerEmail] = useState('');
 
-                <SectionLabel>Segurança</SectionLabel>
-                {SEGURANCA.map(i => (
-                    <MenuItem key={i.label}>
+    useEffect(() => {
+        fetchTrainerProfile().then(profile => {
+            if (profile) setTrainerEmail(profile.email);
+        });
+    }, []);
+
+    const handleSignOut = async () => {
+        await signOut();
+        navigate('/login');
+    };
+
+    const SEGURANCA = [
+        { icon: '🔑', variant: 'orange' as const, label: 'Alterar senha', sub: 'Última alteração há 3 meses' },
+        { icon: '📧', variant: undefined, label: 'Alterar e-mail', sub: trainerEmail || '—' },
+        { icon: '📱', variant: undefined, label: 'Autenticação em 2 fatores', sub: '⚠ Desativada — recomendamos ativar' },
+    ];
+
+    const DADOS = [
+        { icon: '📤', label: 'Exportar meus dados', sub: 'LGPD — formato JSON ou CSV' },
+        { icon: '🗑️', label: 'Excluir conta', sub: 'Ação irreversível' },
+    ];
+
+    return (
+        <>
+            <Topbar>
+                <BackButton onClick={onBack}><ChevronLeftIcon /></BackButton>
+                <TopbarTitle>Conta & Segurança</TopbarTitle>
+            </Topbar>
+            <ScrollPane>
+                <SectionBody>
+                    <SectionLabel>Plano atual</SectionLabel>
+                    <PlanCard>
+                        <PlanInfo>
+                            <PlanTitle>⭐ Plano Pro</PlanTitle>
+                            <PlanSub>Renova em 15 Mar 2026 · R$ 49,90/mês</PlanSub>
+                        </PlanInfo>
+                        <PlanButton>Gerenciar</PlanButton>
+                    </PlanCard>
+
+                    <SectionLabel>Segurança</SectionLabel>
+                    {SEGURANCA.map(i => (
+                        <MenuItem key={i.label}>
+                            <MenuLeft>
+                                <MenuIcon $variant={i.variant}>{i.icon}</MenuIcon>
+                                <MenuTextWrap>
+                                    <MenuTitle>{i.label}</MenuTitle>
+                                    <MenuSub>{i.sub}</MenuSub>
+                                </MenuTextWrap>
+                            </MenuLeft>
+                            <ChevronRight>›</ChevronRight>
+                        </MenuItem>
+                    ))}
+
+                    <SectionLabel>Meus dados</SectionLabel>
+                    {DADOS.map(i => (
+                        <MenuItem key={i.label}>
+                            <MenuLeft>
+                                <MenuIcon>{i.icon}</MenuIcon>
+                                <MenuTextWrap>
+                                    <MenuTitle>{i.label}</MenuTitle>
+                                    <MenuSub>{i.sub}</MenuSub>
+                                </MenuTextWrap>
+                            </MenuLeft>
+                            <ChevronRight>›</ChevronRight>
+                        </MenuItem>
+                    ))}
+
+                    <MenuItem $danger style={{ marginTop: 4 }} onClick={handleSignOut}>
                         <MenuLeft>
-                            <MenuIcon $variant={i.variant}>{i.icon}</MenuIcon>
+                            <MenuIcon $variant="red">🚪</MenuIcon>
                             <MenuTextWrap>
-                                <MenuTitle>{i.label}</MenuTitle>
-                                <MenuSub>{i.sub}</MenuSub>
+                                <MenuTitle $danger>Sair da conta</MenuTitle>
+                                <MenuSub>Você precisará fazer login novamente</MenuSub>
                             </MenuTextWrap>
                         </MenuLeft>
-                        <ChevronRight>›</ChevronRight>
+                        <ChevronRight style={{ color: '#EF4444' }}>›</ChevronRight>
                     </MenuItem>
-                ))}
 
-                <SectionLabel>Meus dados</SectionLabel>
-                {DADOS.map(i => (
-                    <MenuItem key={i.label}>
-                        <MenuLeft>
-                            <MenuIcon>{i.icon}</MenuIcon>
-                            <MenuTextWrap>
-                                <MenuTitle>{i.label}</MenuTitle>
-                                <MenuSub>{i.sub}</MenuSub>
-                            </MenuTextWrap>
-                        </MenuLeft>
-                        <ChevronRight>›</ChevronRight>
-                    </MenuItem>
-                ))}
-
-                <MenuItem $danger style={{ marginTop: 4 }}>
-                    <MenuLeft>
-                        <MenuIcon $variant="red">🚪</MenuIcon>
-                        <MenuTextWrap>
-                            <MenuTitle $danger>Sair da conta</MenuTitle>
-                            <MenuSub>Você precisará fazer login novamente</MenuSub>
-                        </MenuTextWrap>
-                    </MenuLeft>
-                    <ChevronRight style={{ color: '#EF4444' }}>›</ChevronRight>
-                </MenuItem>
-
-                <FooterVersion>
-                    Personal Tech v1.0.0 · <span className="link">Termos</span> · <span className="link">Privacidade</span>
-                </FooterVersion>
-            </SectionBody>
-        </ScrollPane>
-    </>
-);
+                    <FooterVersion>
+                        Personal Tech v1.0.0 · <span className="link">Termos</span> · <span className="link">Privacidade</span>
+                    </FooterVersion>
+                </SectionBody>
+            </ScrollPane>
+        </>
+    );
+};

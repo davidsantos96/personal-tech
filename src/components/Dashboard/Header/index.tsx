@@ -16,34 +16,30 @@ import { LogoCircle } from '../../Logo';
 import { useNotifications } from '../../../hooks/useNotifications';
 import { NotificationDrawer } from '../../NotificationDrawer';
 import { useAuth } from '../../../contexts/AuthContext';
-import { getSupabase, isSupabaseConfigured } from '../../../lib/supabase';
+import { fetchTrainerProfile } from '../../../services/trainerService';
 
 export const Header = () => {
     const { unreadCount, criticalCount } = useNotifications();
     const [drawerOpen, setDrawerOpen] = useState(false);
     const { user } = useAuth();
     const [trainerName, setTrainerName] = useState('Personal');
+    const [trainerAvatar, setTrainerAvatar] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!isSupabaseConfigured || !user) return;
+        if (!user) return;
 
         let mounted = true;
-        const loadTrainerName = async () => {
-            try {
-                const supabase = await getSupabase();
-                const { data: trainer } = await supabase
-                    .from('trainers')
-                    .select('full_name')
-                    .eq('auth_id', user.id)
-                    .single();
-                if (mounted && trainer) {
-                    setTrainerName((trainer as any).full_name || 'Personal');
-                }
-            } catch { /* keep default */ }
-        };
-        loadTrainerName();
+        fetchTrainerProfile().then(profile => {
+            if (mounted && profile) {
+                setTrainerName(profile.fullName || 'Personal');
+                setTrainerAvatar(profile.avatarUrl);
+            }
+        });
         return () => { mounted = false; };
     }, [user]);
+
+    const avatarUrl = trainerAvatar
+        || `https://ui-avatars.com/api/?name=${encodeURIComponent(trainerName)}&background=FF6D00&color=fff&size=80`;
 
     return (
         <HeaderContainer>
@@ -64,7 +60,7 @@ export const Header = () => {
                     )}
                 </NotificationButton>
                 <AvatarWrapper>
-                    <Avatar $imageUrl="https://lh3.googleusercontent.com/aida-public/AB6AXuAhI5bTxWoSqozBUZJtbD_9FARUZp5YrLgi4mE8oYCFCe4YSjj9Gv14QNQgasu7bU1BgIPSW8fZsy3_ZOGs1mNlnf_sFDP0FvjNJXaZwp15hE6ZPAWCxHIBqS_api546-57iiDUCVjYI2tw7Zz41z5p3pv8w2eMxx_J9eaHnz9UBbUfFBDadBaPsAYXztV0s9Jq-Bu6ZnMc4VPUKIR62_eXovOI9Q3sHyDycqp9njPu5DE2W2qE-_8mWBv-Rw5dbGd3AAETIt9l5w" />
+                    <Avatar $imageUrl={avatarUrl} />
                     <StatusIndicator />
                 </AvatarWrapper>
             </RightActions>

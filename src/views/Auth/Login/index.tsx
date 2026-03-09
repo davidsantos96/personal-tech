@@ -41,32 +41,41 @@ export const Login = () => {
             const supabase = await getSupabase();
 
             if (isLogin) {
-                const { error } = await supabase.auth.signInWithPassword({
+                // ── LOGIN ──
+                const { error, data } = await supabase.auth.signInWithPassword({
                     email,
                     password
                 });
                 if (error) throw error;
+
+                // Ensure trainer record exists (may be missing if signup insert failed)
+                if (data.user) {
+                    await ensureTrainerExists(supabase, data.user);
+                }
             } else {
+                // ── SIGNUP ──
+                // Store fullName in user_metadata so we can recover it after email confirmation
                 const { error: signUpError, data } = await supabase.auth.signUp({
                     email,
-                    password
+                    password,
+                    options: {
+                        data: { full_name: fullName }
+                    }
                 });
                 if (signUpError) throw signUpError;
 
-                // After signup, insert into trainers
+                // Try to insert trainer row now (works if email confirmation is disabled)
                 if (data.user) {
-                    const { error: insertError } = await supabase.from('trainers').insert({
-                        auth_id: data.user.id,
-                        email: data.user.email || '',
-                        full_name: fullName,
-                        phone: null,
-                        avatar_url: null,
-                        specialty: null,
-                    });
-                    if (insertError) {
-                        console.error("Trainer hook failed:", insertError);
-                        // Informally fallback but keep session
-                    }
+                    await ensureTrainerExists(supabase, data.user, fullName);
+                }
+
+                // If email confirmation is required, inform the user
+                if (data.user && !data.session) {
+                    setError('');
+                    setLoading(false);
+                    alert('Conta criada! Verifique seu email para confirmar e depois faça login.');
+                    setIsLogin(true);
+                    return;
                 }
             }
 
@@ -75,6 +84,44 @@ export const Login = () => {
             setError(err.message || 'Erro ao autenticar. Verifique seus dados.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    /**
+     * Ensure a trainer record exists for the authenticated user.
+     * If not, create one using the provided name or the name from user_metadata.
+     */
+    const ensureTrainerExists = async (supabase: any, user: any, nameOverride?: string) => {
+        try {
+            // Check if trainer already exists
+            const { data: existing } = await supabase
+                .from('trainers')
+                .select('id')
+                .eq('auth_id', user.id)
+                .maybeSingle();
+
+            if (existing) return; // Already exists
+
+            // Get the name from: 1) explicit param, 2) user_metadata, 3) email prefix
+            const name = nameOverride
+                || user.user_metadata?.full_name
+                || user.email?.split('@')[0]
+                || 'Personal';
+
+            const { error: insertError } = await supabase.from('trainers').insert({
+                auth_id: user.id,
+                email: user.email || '',
+                full_name: name,
+                phone: null,
+                avatar_url: null,
+                specialty: null,
+            });
+
+            if (insertError) {
+                console.error('[Login] Trainer insert failed:', insertError);
+            }
+        } catch (err) {
+            console.error('[Login] ensureTrainerExists error:', err);
         }
     };
 

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
+import { clearTrainerCache } from '../services/trainerService';
 import type { User, Session } from '@supabase/supabase-js';
 
 interface AuthContextData {
@@ -56,12 +57,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, []);
 
     const signOut = async () => {
+        clearTrainerCache();
         if (isSupabaseConfigured) {
-            const supabase = await getSupabase();
-            await supabase.auth.signOut();
-        } else {
-            setUser(null);
+            try {
+                const supabase = await getSupabase();
+                await supabase.auth.signOut();
+            } catch (err) {
+                console.error('Erro ao fazer signOut no Supabase:', err);
+            }
         }
+        setSession(null);
+        setUser(null);
     };
 
     return (

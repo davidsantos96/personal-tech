@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSaveAction } from '../hooks/useSaveAction';
+import { fetchTrainerProfile, updateTrainerProfile } from '../../../../services/trainerService';
 import {
     Topbar,
     BackButton,
@@ -36,22 +37,65 @@ interface DadosScreenProps {
 }
 
 export const DadosScreen = ({ onBack }: DadosScreenProps) => {
-    const [nome, setNome] = useState('Coach Silva');
-    const [cref, setCref] = useState('012345-G/SP');
-    const [tel, setTel] = useState('(11) 99999-0000');
-    const [email, setEmail] = useState('coach@personaltech.app');
-    const [bio, setBio] = useState('Personal trainer há 8 anos, especializado em hipertrofia e reabilitação funcional.');
-    const [esp, setEsp] = useState(['Musculação', 'Funcional', 'Reabilitação']);
+    const [nome, setNome] = useState('');
+    const [cref, setCref] = useState('');
+    const [tel, setTel] = useState('');
+    const [email, setEmail] = useState('');
+    const [bio, setBio] = useState('');
+    const [esp, setEsp] = useState<string[]>([]);
+    const [loading, setLoading] = useState(true);
     const { save, label, saved } = useSaveAction();
 
+    useEffect(() => {
+        fetchTrainerProfile().then(profile => {
+            if (profile) {
+                setNome(profile.fullName || '');
+                setEmail(profile.email || '');
+                setTel(profile.phone || '');
+                if (profile.specialty) {
+                    setEsp(profile.specialty.split(',').map(s => s.trim()).filter(Boolean));
+                }
+            }
+            setLoading(false);
+        });
+    }, []);
+
     const toggleEsp = (e: string) => setEsp(p => p.includes(e) ? p.filter(x => x !== e) : [...p, e]);
+
+    const handleSave = async () => {
+        try {
+            await updateTrainerProfile({
+                fullName: nome,
+                email,
+                phone: tel || null,
+                specialty: esp.join(', ') || null,
+            });
+            save();
+        } catch (err) {
+            console.error('Erro ao salvar:', err);
+        }
+    };
+
+    if (loading) {
+        return (
+            <>
+                <Topbar>
+                    <BackButton onClick={onBack}><ChevronLeftIcon /></BackButton>
+                    <TopbarTitle>Dados Profissionais</TopbarTitle>
+                </Topbar>
+                <ScrollPane>
+                    <div style={{ padding: 20, textAlign: 'center', color: '#94a3b8' }}>Carregando...</div>
+                </ScrollPane>
+            </>
+        );
+    }
 
     return (
         <>
             <Topbar>
                 <BackButton onClick={onBack}><ChevronLeftIcon /></BackButton>
                 <TopbarTitle>Dados Profissionais</TopbarTitle>
-                <TopbarAction $saved={saved} onClick={save}>{label}</TopbarAction>
+                <TopbarAction $saved={saved} onClick={handleSave}>{label}</TopbarAction>
             </Topbar>
             <ScrollPane>
                 <SectionBody>
@@ -71,7 +115,7 @@ export const DadosScreen = ({ onBack }: DadosScreenProps) => {
                         </Field>
                         <Field>
                             <FieldLabel>CREF</FieldLabel>
-                            <FieldInput value={cref} onChange={e => setCref(e.target.value)} />
+                            <FieldInput value={cref} onChange={e => setCref(e.target.value)} placeholder="Seu CREF" />
                         </Field>
                     </Row2>
 
@@ -82,7 +126,7 @@ export const DadosScreen = ({ onBack }: DadosScreenProps) => {
                         </Field>
                         <Field>
                             <FieldLabel>WhatsApp</FieldLabel>
-                            <FieldInput value={tel} onChange={e => setTel(e.target.value)} />
+                            <FieldInput value={tel} onChange={e => setTel(e.target.value)} placeholder="(00) 00000-0000" />
                         </Field>
                     </Row2>
 
@@ -97,7 +141,7 @@ export const DadosScreen = ({ onBack }: DadosScreenProps) => {
 
                     <Field>
                         <FieldLabel>Bio profissional</FieldLabel>
-                        <FieldTextarea value={bio} onChange={e => setBio(e.target.value)} />
+                        <FieldTextarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Conte um pouco sobre você..." />
                     </Field>
 
                     <Field>

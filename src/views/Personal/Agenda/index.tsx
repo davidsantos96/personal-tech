@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { useSchedule } from '../../../contexts/ScheduleContext';
+import { fetchTrainerProfile } from '../../../services/trainerService';
 import { BottomNav } from '../../../components/Layout/BottomNav';
 import { LogoCircle } from '../../../components/Logo';
 import {
@@ -80,10 +82,24 @@ const RenderIcon = ({ name, color }: { name?: string, color?: string }) => {
 
 export const Agenda = () => {
     const navigate = useNavigate();
-
-
     const { agendaItems, reorderAgenda } = useSchedule();
     const TIME_SLOTS = agendaItems.map(item => item.time || 'Extra');
+    const [trainerAvatar, setTrainerAvatar] = useState<string>('');
+
+    useEffect(() => {
+        fetchTrainerProfile().then(profile => {
+            if (profile) {
+                setTrainerAvatar(
+                    profile.avatarUrl
+                    || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.fullName)}&background=FF6D00&color=fff&size=80`
+                );
+            }
+        });
+    }, []);
+
+    const now = new Date();
+    const monthYear = now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    const capitalizedMonthYear = monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
 
     const onDragEnd = (result: DropResult) => {
         if (!result.destination) {
@@ -101,13 +117,13 @@ export const Agenda = () => {
                         <LogoCircle size={28} id="agenda-logo" />
                         <Title>Agenda</Title>
                     </div>
-                    <Subtitle>Fevereiro, 2026</Subtitle>
+                    <Subtitle>{capitalizedMonthYear}</Subtitle>
                 </HeaderTitle>
                 <HeaderActions>
                     <IconButton aria-label="Notificações">
                         <BellIcon />
                     </IconButton>
-                    <Avatar src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80" alt="Usuário" />
+                    <Avatar src={trainerAvatar || undefined} alt="Usuário" />
                 </HeaderActions>
             </HeaderRow>
 

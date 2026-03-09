@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../../contexts/AuthContext';
 import {
     TopicsContainer,
     TopicCard,
@@ -34,37 +36,47 @@ const TOPICS: TopicItem[] = [
     { id: 'conta', icon: '🔐', title: 'Conta & Segurança', sub: 'Senha, 2FA, plano, LGPD' },
 ];
 
-export const MenuSection = ({ onNavigate }: MenuSectionProps) => (
-    <TopicsContainer>
-        {TOPICS.map(t => (
-            <TopicCard key={t.id} onClick={() => onNavigate(t.id)}>
+export const MenuSection = ({ onNavigate }: MenuSectionProps) => {
+    const { signOut } = useAuth();
+    const navigate = useNavigate();
+
+    const handleSignOut = async () => {
+        await signOut();
+        navigate('/login');
+    };
+
+    return (
+        <TopicsContainer>
+            {TOPICS.map(t => (
+                <TopicCard key={t.id} onClick={() => onNavigate(t.id)}>
+                    <TopicLeft>
+                        <TopicIcon $variant={t.variant}>{t.icon}</TopicIcon>
+                        <TopicTextWrap>
+                            <TopicTitle>{t.title}</TopicTitle>
+                            <TopicSub>{t.sub}</TopicSub>
+                        </TopicTextWrap>
+                    </TopicLeft>
+                    <TopicRight>
+                        {t.badge && <TopicBadge $warn={t.badgeWarn}>{t.badge}</TopicBadge>}
+                        <ChevronRight>›</ChevronRight>
+                    </TopicRight>
+                </TopicCard>
+            ))}
+
+            <TopicCard $danger onClick={handleSignOut}>
                 <TopicLeft>
-                    <TopicIcon $variant={t.variant}>{t.icon}</TopicIcon>
+                    <TopicIcon $variant="red">🚪</TopicIcon>
                     <TopicTextWrap>
-                        <TopicTitle>{t.title}</TopicTitle>
-                        <TopicSub>{t.sub}</TopicSub>
+                        <TopicTitle style={{ color: '#EF4444' }}>Sair da conta</TopicTitle>
+                        <TopicSub>Encerrar sessão atual</TopicSub>
                     </TopicTextWrap>
                 </TopicLeft>
-                <TopicRight>
-                    {t.badge && <TopicBadge $warn={t.badgeWarn}>{t.badge}</TopicBadge>}
-                    <ChevronRight>›</ChevronRight>
-                </TopicRight>
+                <ChevronRight style={{ color: '#EF4444' }}>›</ChevronRight>
             </TopicCard>
-        ))}
 
-        <TopicCard $danger onClick={() => { /* TODO: logout */ }}>
-            <TopicLeft>
-                <TopicIcon $variant="red">🚪</TopicIcon>
-                <TopicTextWrap>
-                    <TopicTitle style={{ color: '#EF4444' }}>Sair da conta</TopicTitle>
-                    <TopicSub>Encerrar sessão atual</TopicSub>
-                </TopicTextWrap>
-            </TopicLeft>
-            <ChevronRight style={{ color: '#EF4444' }}>›</ChevronRight>
-        </TopicCard>
-
-        <FooterVersion>
-            Personal Tech v1.0.0 · <span className="link">Termos</span> · <span className="link">Privacidade</span>
-        </FooterVersion>
-    </TopicsContainer>
-);
+            <FooterVersion>
+                Personal Tech v1.0.0 · <span className="link">Termos</span> · <span className="link">Privacidade</span>
+            </FooterVersion>
+        </TopicsContainer>
+    );
+};
