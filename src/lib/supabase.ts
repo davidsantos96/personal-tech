@@ -19,8 +19,8 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 if (!supabaseUrl || !supabaseAnonKey) {
     console.warn(
         '[Supabase] Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY.\n' +
-            'Copy .env.example → .env and fill in your credentials.\n' +
-            'The app will run in offline/mock mode until configured.',
+        'Copy .env.example → .env and fill in your credentials.\n' +
+        'The app will run in offline/mock mode until configured.',
     );
 }
 
@@ -33,24 +33,28 @@ export const isSupabaseConfigured =
     !!supabaseAnonKey &&
     !supabaseUrl.includes('placeholder');
 
-let _client: SupabaseClient<Database> | null = null;
+let _clientPromise: Promise<SupabaseClient<Database>> | null = null;
 
 /**
  * Lazily creates and returns the Supabase client.
  * The heavy @supabase/supabase-js bundle is only downloaded on first call.
  */
-export async function getSupabase(): Promise<SupabaseClient<Database>> {
-    if (_client) return _client;
-    const { createClient } = await import('@supabase/supabase-js');
-    _client = createClient<Database>(
-        supabaseUrl || 'https://placeholder.supabase.co',
-        supabaseAnonKey || 'placeholder-key',
-        {
-            auth: {
-                persistSession: true,
-                autoRefreshToken: true,
+export function getSupabase(): Promise<SupabaseClient<Database>> {
+    if (_clientPromise) return _clientPromise;
+
+    _clientPromise = (async () => {
+        const { createClient } = await import('@supabase/supabase-js');
+        return createClient<Database>(
+            supabaseUrl || 'https://placeholder.supabase.co',
+            supabaseAnonKey || 'placeholder-key',
+            {
+                auth: {
+                    persistSession: true,
+                    autoRefreshToken: true,
+                },
             },
-        },
-    );
-    return _client;
+        );
+    })();
+
+    return _clientPromise;
 }
