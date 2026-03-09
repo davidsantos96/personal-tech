@@ -148,4 +148,38 @@ function mapDbStudentToAppStudent(dbStudent: any): Student {
     };
 }
 
+/**
+ * Renova o plano do aluno adicionando 30 dias a partir da data atual
+ * e define o status como ativo.
+ */
+export async function renewStudentPlan(studentId: string): Promise<boolean> {
+    if (!isSupabaseConfigured) {
+        console.warn('Mock mode: renewStudentPlan ignored.');
+        return true;
+    }
+
+    try {
+        const supabase = await getSupabase();
+
+        const newExpiresAt = new Date();
+        newExpiresAt.setDate(newExpiresAt.getDate() + 30);
+        const dateStr = newExpiresAt.toISOString().split('T')[0];
+
+        const { error } = await supabase
+            .from('students')
+            .update({
+                plan_expires_at: dateStr,
+                status: 'active'
+            })
+            .eq('id', studentId);
+
+        if (error) throw error;
+
+        return true;
+    } catch (err) {
+        console.error('[studentService] renewStudentPlan failed:', err);
+        return false;
+    }
+}
+
 export { studentsData } from '../data/students';

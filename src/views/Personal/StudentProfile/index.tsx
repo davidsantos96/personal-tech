@@ -3,6 +3,7 @@
 import { useState, useSyncExternalStore, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getStudentById } from '../../../data/students';
+import { renewStudentPlan } from '../../../services/studentService';
 import {
     getCompletedSessions,
     fetchCompletedSessions,
@@ -140,6 +141,26 @@ export const StudentProfile = () => {
     const { id } = useParams<{ id: string }>();
     const student = id ? getStudentById(id) : undefined;
     const [menuOpen, setMenuOpen] = useState(false);
+    const [isRenewing, setIsRenewing] = useState(false);
+
+    const handleRenewPlan = async () => {
+        setMenuOpen(false);
+        if (!id || isRenewing) return;
+
+        const confirm = window.confirm('Deseja renovar o plano do aluno por mais 30 dias?');
+        if (!confirm) return;
+
+        setIsRenewing(true);
+        const success = await renewStudentPlan(id);
+        setIsRenewing(false);
+
+        if (success) {
+            alert('Plano renovado com sucesso!');
+            window.location.reload();
+        } else {
+            alert('Erro ao renovar o plano. Tente novamente.');
+        }
+    };
 
     // Reactive workout history — re-renders when sessions change
     const sessions = useSyncExternalStore(
@@ -150,7 +171,7 @@ export const StudentProfile = () => {
     // Pre-fetch sessions from Supabase so local cache is warm
     useEffect(() => {
         if (id) {
-            fetchCompletedSessions(id).catch(() => {});
+            fetchCompletedSessions(id).catch(() => { });
         }
     }, [id]);
 
@@ -212,9 +233,9 @@ export const StudentProfile = () => {
                         <>
                             <DropdownOverlay onClick={() => setMenuOpen(false)} />
                             <DropdownMenu>
-                                <DropdownItem onClick={() => { setMenuOpen(false); /* TODO: Renovar Plano */ }}>
+                                <DropdownItem onClick={handleRenewPlan}>
                                     <RenewIcon />
-                                    Renovar Plano
+                                    {isRenewing ? 'Renovando...' : 'Renovar Plano'}
                                 </DropdownItem>
                                 <DropdownItem onClick={() => { setMenuOpen(false); navigate('/avaliacao-fisica'); }}>
                                     <AssessmentIcon />

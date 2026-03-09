@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getSupabase, isSupabaseConfigured } from '../../../lib/supabase';
+import { fetchTrainerProfile } from '../../../services/trainerService';
 import {
     Container,
     Header,
@@ -142,10 +144,45 @@ export const ScheduleSession = () => {
 
     const isValid = form.studentId !== '';
 
-    const handleSubmit = () => {
-        if (!isValid) return;
-        // TODO: persist session
-        navigate('/agenda');
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async () => {
+        if (!isValid || loading) return;
+        setLoading(true);
+
+        try {
+            if (isSupabaseConfigured) {
+                const supabase = await getSupabase();
+                const trainer = await fetchTrainerProfile();
+
+                if (trainer) {
+                    const [hour, minute] = form.startTime.split(':').map(Number);
+                    const startsAt = new Date(currentYear, currentMonth, selectedDay, hour, minute);
+                    const durationInt = parseInt(form.duration.split(' ')[0], 10) || 60;
+                    const endsAt = new Date(startsAt.getTime() + durationInt * 60000);
+
+                    const { error } = await supabase.from('appointments').insert({
+                        trainer_id: trainer.id,
+                        student_id: form.studentId,
+                        starts_at: startsAt.toISOString(),
+                        ends_at: endsAt.toISOString(),
+                        duration_minutes: durationInt,
+                        activity: form.sessionType,
+                        notes: form.notes || null,
+                        status: 'scheduled'
+                    });
+
+                    if (error) throw error;
+                }
+            }
+
+            navigate('/agenda');
+        } catch (err) {
+            console.error('Erro ao agendar sessão:', err);
+            alert('Erro ao agendar a sessão. Tente novamente.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -280,9 +317,15 @@ export const ScheduleSession = () => {
 
             {/* ── Submit ── */}
             <SubmitArea>
-                <ScheduleButton onClick={handleSubmit} disabled={!isValid}>
-                    <CalendarCheckIcon />
-                    Agendar Sessão
+                <ScheduleButton onClick={handleSubmit} disabled={!isValid || loading}>
+                    {loading ? (
+                        'Agendando...'
+                    ) : (
+                        <>
+                            <CalendarCheckIcon />
+                            Agendar Sessão
+                        </>
+                    )}
                 </ScheduleButton>
             </SubmitArea>
         </Container>
